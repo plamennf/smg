@@ -5,27 +5,30 @@
 #include "font.h"
 #include "assets.h"
 #include "input.h"
+#include "world.h"
+
+#include "entity_hero.h"
+#include "entity_light.h"
 
 #include <stdio.h>
 
 static int fps_cap = 60;
-static Vector2 hero_position = {};
-static Vector2 hero_size = {2, 2};
+static World current_world;
 
-static void update_frame(float dt) {
-    Vector2 move_dir = {};
-
-    if (is_key_down(KEY_A)) move_dir.x -= 1.0f;
-    if (is_key_down(KEY_D)) move_dir.x += 1.0f;
+static void init_test_world() {
+    world_init(&current_world, v2i(16, 9));
     
-    if (is_key_down(KEY_W)) move_dir.y += 1.0f;
-    if (is_key_down(KEY_S)) move_dir.y -= 1.0f;
+    Hero *hero     = make_hero(&current_world);
+    hero->position = v2(0, 0);
+    hero->size     = v2(2, 2);
+    hero->texture  = find_or_load_texture("BRAND_NEW_PACHI_SPRITE1");
 
-    move_dir = normalize_or_zero(move_dir);
+    Light *light    = make_light(&current_world);
+    light->position = hero->position;
+    light->radius   = hero->size.y * 0.5f;
+    light->color    = v3(1, 0.5f, 0.2f);
 
-    float speed = 5.0f;
-    
-    hero_position += move_dir * speed * dt;
+    hero->light_id = light->id;
 }
 
 static void render_frame(Render_Commands *rc, float dt) {
@@ -42,23 +45,7 @@ static void render_frame(Render_Commands *rc, float dt) {
         setup.blend_mode = BLEND_MODE_SSLM;
         set_render_setup(rc, setup);
 
-        Vector2 screen_hero_position = hero_position;
-
-        screen_hero_position.x /= 16.0f;
-        screen_hero_position.y /= 9.0f;
-
-        screen_hero_position.x *= (float)render_width;
-        screen_hero_position.y *= (float)render_height;
-
-        Vector2 screen_hero_size = hero_size;
-
-        screen_hero_size.x /= 16.0f;
-        screen_hero_size.y /= 9.0f;
-
-        screen_hero_size.x *= (float)render_width;
-        screen_hero_size.y *= (float)render_height;
-    
-        render_circle(rc, v2(screen_hero_position.x + screen_hero_size.x * 0.5f, screen_hero_position.y + screen_hero_size.y * 0.5f), screen_hero_size.y * 0.5f, {1, 0.5f, 0.2f, 1});
+        world_render_lights(&current_world, rc);
     }
 
     // Render Main Scene.
@@ -74,25 +61,7 @@ static void render_frame(Render_Commands *rc, float dt) {
         setup.blend_mode = BLEND_MODE_ALPHA;
         set_render_setup(rc, setup);
 
-        auto texture = find_or_load_texture("BRAND_NEW_PACHI_SPRITE1");
-
-        Vector2 screen_hero_position = hero_position;
-
-        screen_hero_position.x /= 16.0f;
-        screen_hero_position.y /= 9.0f;
-
-        screen_hero_position.x *= (float)render_width;
-        screen_hero_position.y *= (float)render_height;
-
-        Vector2 screen_hero_size = hero_size;
-
-        screen_hero_size.x /= 16.0f;
-        screen_hero_size.y /= 9.0f;
-
-        screen_hero_size.x *= (float)render_width;
-        screen_hero_size.y *= (float)render_height;
-        
-        render_quad(rc, texture, screen_hero_position, screen_hero_size, {1, 1, 1, 1});
+        world_render(&current_world, rc);
     }
 
     // Blit to back buffer and draw hud.
@@ -127,17 +96,19 @@ int main(int argc, char *argv[]) {
     if (!window_init(2080, 1080, "Swordsman Game!")) return 1;
     render_init();
 
-    double last_time = get_time();
+    init_test_world();
+    
+    u64 last_time = get_time_nanoseconds();
     while (window_is_open) {
-        double now_time = get_time();
-        double dt = now_time - last_time;
+        u64 now_time = get_time_nanoseconds();
+        double dt = (double)(now_time - last_time) / 1000000000.0;
         last_time = now_time;
         
         window_poll_events();
-
+        
         if (is_key_pressed(KEY_F11)) window_toggle_fullscreen();
         
-        update_frame((float)dt);
+        world_update(&current_world, (float)dt);
         
         Render_Commands *render_commands = render_begin_frame();
         render_frame(render_commands, (float)dt);

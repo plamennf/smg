@@ -1,0 +1,150 @@
+#include "main.h"
+
+#include "world.h"
+#include "render.h"
+#include "input.h"
+
+#include "mt19937-64.h"
+
+#include "entity_hero.h"
+#include "entity_light.h"
+
+void world_init(World *world, Vector2i size) {
+    unsigned long long init[] = {(u64)size.x, (u64)size.y};
+    init_by_array64(init, ArrayCount(init));
+    
+    world->size = size;
+}
+
+static void update_single_hero(Hero *hero, float dt) {
+    Vector2 move_dir = {};
+
+    if (is_key_down(KEY_A)) move_dir.x -= 1.0f;
+    if (is_key_down(KEY_D)) move_dir.x += 1.0f;
+    
+    if (is_key_down(KEY_W)) move_dir.y += 1.0f;
+    if (is_key_down(KEY_S)) move_dir.y -= 1.0f;
+
+    move_dir = normalize_or_zero(move_dir);
+
+    float speed = 5.0f;
+    
+    hero->position += move_dir * speed * dt;
+
+    Entity *light_e = get_entity_by_id(hero->world, hero->light_id);
+    if (light_e) {
+        Light *light = (Light *)light_e;
+        light->position = hero->position + (0.5f * hero->size);
+    }
+}
+
+void world_update(World *world, float dt) {
+    for (int i = 0; i < world->entity_lookup.allocated; i++) {
+        if (!world->entity_lookup.occupancy_mask[i]) continue;
+        Entity *e = world->entity_lookup.buckets[i].value;
+
+        switch (e->type) {
+            case ENTITY_TYPE_HERO: {
+                update_single_hero((Hero *)e, dt);
+            } break;
+        }
+    }
+}
+
+void world_render(World *world, Render_Commands *rc) {
+    for (int i = 0; i < world->entity_lookup.allocated; i++) {
+        if (!world->entity_lookup.occupancy_mask[i]) continue;
+        Entity *e = world->entity_lookup.buckets[i].value;
+        if (e->type == ENTITY_TYPE_LIGHT) continue;
+        
+        Vector2 screen_space_position = world_space_to_screen_space(world, e->position);
+        Vector2 screen_space_size     = world_space_to_screen_space(world, e->size);
+
+        render_quad(rc, e->texture, screen_space_position, screen_space_size, {1, 1, 1, 1});
+    }
+}
+
+void world_render_lights(World *world, Render_Commands *rc) {
+    for (int i = 0; i < world->entity_lookup.allocated; i++) {
+        if (!world->entity_lookup.occupancy_mask[i]) continue;
+        Entity *e = world->entity_lookup.buckets[i].value;
+        if (e->type != ENTITY_TYPE_LIGHT) continue;
+
+        Light *light = (Light *)e;
+        
+        Vector2 screen_space_position = world_space_to_screen_space(world, e->position);
+        float   screen_space_radius   = (light->radius / (float)world->size.y) * render_height;
+
+        Vector4 color = v4(light->color, 1.0f);
+        
+        render_circle(rc, screen_space_position, screen_space_radius, color);
+    }
+}
+
+Vector2 world_space_to_screen_space(World *world, Vector2 v) {
+    assert(world->size.x > 0);
+    assert(world->size.y > 0);
+    
+    Vector2 result = v;
+
+    result.x /= (float)world->size.x;
+    result.y /= (float)world->size.y;
+
+    result.x *= (float)render_width;
+    result.y *= (float)render_height;
+
+    return result;
+}
+
+Vector2 screen_space_to_world_space(World *world, Vector2 v) {
+    assert(render_width  > 0);
+    assert(render_height > 0);
+
+    Vector2 result = v;
+
+    result.x /= (float)render_width;
+    result.y /= (float)render_height;
+
+    result.x *= (float)world->size.x;
+    result.y *= (float)world->size.y;
+
+    return result;
+}
+
+Entity *get_entity_by_id(World *world, u64 id) {
+    Entity **_e = world->entity_lookup.find(id);
+    if (!_e) return NULL;
+    return *_e;
+}
+
+static u64 generate_id(World *world) {
+    while (1) {
+        u64 id = genrand64_int64();
+        Entity **_e = world->entity_lookup.find(id);
+        if (!_e) return id;
+    }
+
+    return 0;
+}
+
+static void register_entity(World *world, Entity *e, Entity_Type type) {
+    u64 id = generate_id(world);
+
+    e->id    = id;
+    e->world = world;
+    e->type  = type;
+
+    world->entity_lookup.add(id, e);
+}
+
+Hero *make_hero(World *world) {
+    Hero *hero = new Hero();
+    register_entity(world, hero, ENTITY_TYPE_HERO);
+    return hero;
+}
+
+Light *make_light(World *world) {
+    Light *light = new Light();
+    register_entity(world, light, ENTITY_TYPE_LIGHT);
+    return light;
+}

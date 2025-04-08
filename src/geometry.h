@@ -412,6 +412,17 @@ inline Vector4 make_vector4(float x, float y, float z, float w) {
     return result;
 }
 
+inline Vector4 make_vector4(Vector3 xyz, float w) {
+    Vector4 result;
+
+    result.x = xyz.x;
+    result.y = xyz.y;
+    result.z = xyz.z;
+    result.w = w;
+
+    return result;
+}
+
 inline Vector4 operator+(Vector4 a, Vector4 b) {
     Vector4 result;
 

@@ -3,6 +3,13 @@
 #include <stdio.h>
 #include <GLFW/glfw3.h>
 
+#ifdef _WIN32
+#ifdef APIENTRY
+#undef APIENTRY
+#endif
+#include <Windows.h>
+#endif
+
 char *read_entire_file(char *filepath, s64 *length_pointer) {
     char *result = NULL;
     if (length_pointer) *length_pointer = 0;
@@ -41,6 +48,41 @@ u64 round_to_next_power_of_2(u64 v) {
     return v;
 }
 
+s64 string_length(char *s) {
+    if (!s) return 0;
+
+    s64 len = 0;
+    while (*s++) {
+        len++;
+    }
+    return len;
+}
+
+char *copy_string(char *s) {
+    if (!s) return NULL;
+
+    s64 len = string_length(s);
+    char *result = new char[len + 1];
+    memcpy(result, s, len + 1);
+    return result;
+}
+
+bool strings_match(char *a, char *b) {
+    if (a == b) return true;
+    if (!a || !b) return false;
+
+    while (*a && *b) {
+        if (*a != *b) {
+            return false;
+        }
+
+        a++;
+        b++;
+    }
+
+    return *a == 0 && *b == 0;
+}
+
 bool is_end_of_line(char c) {
     bool result = ((c == '\n') ||
                    (c == '\r'));
@@ -70,6 +112,21 @@ u64 get_hash(char *str) {
     return hash;
 }
 
-double get_time() {
-    return glfwGetTime();
+#ifdef _WIN32
+
+static LARGE_INTEGER global_perf_freq;
+static u64 nanoseconds_per_tick;
+
+u64 get_time_nanoseconds() {
+    if (!global_perf_freq.QuadPart) {
+        QueryPerformanceFrequency(&global_perf_freq);
+        nanoseconds_per_tick = 1000000000 / global_perf_freq.QuadPart;
+    }
+
+    LARGE_INTEGER perf_counter;
+    QueryPerformanceCounter(&perf_counter);
+
+    return perf_counter.QuadPart * nanoseconds_per_tick;
 }
+
+#endif

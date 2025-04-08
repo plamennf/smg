@@ -122,21 +122,29 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\mt19937-64.cpp" />
     <ClCompile Include="src\render.cpp" />
     <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\window.cpp" />
+    <ClCompile Include="src\world.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\array.h" />
     <ClInclude Include="src\assets.h" />
     <ClInclude Include="src\defines.h" />
+    <ClInclude Include="src\entity.h" />
+    <ClInclude Include="src\entity_hero.h" />
+    <ClInclude Include="src\entity_light.h" />
     <ClInclude Include="src\font.h" />
     <ClInclude Include="src\geometry.h" />
+    <ClInclude Include="src\hash_table.h" />
     <ClInclude Include="src\input.h" />
     <ClInclude Include="src\main.h" />
+    <ClInclude Include="src\mt19937-64.h" />
     <ClInclude Include="src\render.h" />
     <ClInclude Include="src\utils.h" />
     <ClInclude Include="src\window.h" />
+    <ClInclude Include="src\world.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

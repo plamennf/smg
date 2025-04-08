@@ -14,7 +14,7 @@ bool window_is_open = false;
 extern Key_State key_states[KEY_LAST];
 
 static GLFWwindow *window = NULL;
-static double last_time;
+static u64 last_time;
 
 static Vector2i prev_window_position = {};
 static Vector2i prev_window_size = {};
@@ -101,7 +101,7 @@ bool window_init(int width, int height, char *title) {
     glfwGetWindowPos(window, &prev_window_position.x, &prev_window_position.y);
     glfwGetWindowSize(window, &prev_window_size.x, &prev_window_size.y);
     
-    last_time = glfwGetTime();
+    last_time = get_time_nanoseconds();
     
     return true;
 }
@@ -121,10 +121,12 @@ void window_swap_buffers() {
 }
 
 void window_sync(int fps_cap) {
-    while (glfwGetTime() <= last_time + 1.0 / (double)fps_cap) {
+    u64 fps_cap_nanoseconds = 1000000000 / fps_cap;
+    
+    while (get_time_nanoseconds() <= last_time + fps_cap_nanoseconds) {
         // @TODO: Maybe sleep.
     }
-    last_time += 1.0 / (double)fps_cap;
+    last_time += fps_cap_nanoseconds;
 }
 
 void window_toggle_fullscreen() {
