@@ -1,5 +1,5 @@
 .vs/
-bin/
-bin-int/
+build/
+build-int/
 *.vcxproj.filters
 *.vcxproj.user

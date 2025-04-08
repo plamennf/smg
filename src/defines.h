@@ -36,3 +36,4 @@ inline Defer_Struct <F> make_defer_func(F f) {
 #define Min(x, y) ((x) < (y) ? (x) : (y))
 
 #define Bit(x) (1 << (x))
+#define Square(x) ((x)*(x))

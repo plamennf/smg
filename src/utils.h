@@ -10,3 +10,5 @@ bool is_space(char c);
 
 u64 get_hash(u64 x);
 u64 get_hash(char *str);
+
+double get_time();

@@ -4,6 +4,8 @@
 #include "render.h"
 #include "font.h"
 
+#include <stdio.h>
+
 template <typename T>
 struct Resource_Info {
     u64 name_hash;

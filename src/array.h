@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdlib.h>
+
 template <typename Array>
 struct Array_Iterator {
     using Value_Type = typename Array::Value_Type;

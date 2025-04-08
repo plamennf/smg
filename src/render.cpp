@@ -300,7 +300,7 @@ void render_end_frame(Render_Commands *commands) {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     
-    glm::mat4 proj = glm::orthoRH(0.0, (double)render_width, 0.0, (double)render_height, -1.0, 1.0);
+    Matrix4 proj = make_orthographic(0.0f, (float)render_width, 0.0f, (float)render_height, -1.0f, 1.0f);
     
     for (u8 *at = commands->base; at < commands->at;) {
         Render_Command_Type type = *(Render_Command_Type *)at;
@@ -330,7 +330,7 @@ void render_end_frame(Render_Commands *commands) {
                     glActiveTexture(GL_TEXTURE1);
                     glBindTexture(GL_TEXTURE_2D, light_fbo_color_texture);
     
-                    proj = glm::orthoRH(0.0, (double)window_width, 0.0, (double)window_height, -1.0, 1.0);
+                    proj = make_orthographic(0.0f, (float)window_width, 0.0f, (float)window_height, -1.0f, 1.0f);
 
                     float ox = 0.5f * (window_width  - render_width);
                     float oy = 0.5f * (window_height - render_height);
@@ -345,7 +345,7 @@ void render_end_frame(Render_Commands *commands) {
                     };
     
                     glUseProgram(the_postprocess_shader);
-                    glUniformMatrix4fv(the_postprocess_shader_proj_loc, 1, GL_FALSE, &proj[0][0]);
+                    glUniformMatrix4fv(the_postprocess_shader_proj_loc, 1, GL_TRUE, &proj._11);
                     glUniform1i(glGetUniformLocation(the_postprocess_shader, "u_texture1"), 0);
                     glUniform1i(glGetUniformLocation(the_postprocess_shader, "u_texture2"), 1);
 
@@ -408,7 +408,7 @@ void render_end_frame(Render_Commands *commands) {
                 }
                 
                 glUseProgram(the_quad_shader);
-                glUniformMatrix4fv(the_quad_shader_view_proj_loc, 1, GL_FALSE, &proj[0][0]);
+                glUniformMatrix4fv(the_quad_shader_view_proj_loc, 1, GL_TRUE, &proj._11);
                 
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D, command->texture ? command->texture->id : 0);
@@ -499,10 +499,10 @@ static Render_Command_Render_Quads *get_current_quads(Render_Commands *commands,
 }
 
 static void push_quad(Render_Commands *rc, Render_Command_Render_Quads *command,
-                      glm::vec2 const &p0, glm::vec4 const &c0, glm::vec2 const &uv0,
-                      glm::vec2 const &p1, glm::vec4 const &c1, glm::vec2 const &uv1,
-                      glm::vec2 const &p2, glm::vec4 const &c2, glm::vec2 const &uv2,
-                      glm::vec2 const &p3, glm::vec4 const &c3, glm::vec2 const &uv3) {
+                      Vector2 const &p0, Vector4 const &c0, Vector2 const &uv0,
+                      Vector2 const &p1, Vector4 const &c1, Vector2 const &uv1,
+                      Vector2 const &p2, Vector4 const &c2, Vector2 const &uv2,
+                      Vector2 const &p3, Vector4 const &c3, Vector2 const &uv3) {
     command->num_vertices += 4;
     command->num_indices  += 6;
 
@@ -533,25 +533,25 @@ static void push_quad(Render_Commands *rc, Render_Command_Render_Quads *command,
     rc->num_indices  += 6;
 }
 
-void render_quad(Render_Commands *rc, Texture *texture, glm::vec2 const &position, glm::vec2 const &size, glm::vec4 const &color) {
+void render_quad(Render_Commands *rc, Texture *texture, Vector2 const &position, Vector2 const &size, Vector4 const &color) {
     render_quad(rc, texture, position, size, NULL, FLIP_MODE_NONE, color);
 }
 
-void render_quad(Render_Commands *rc, Texture *texture, glm::vec2 const &position, glm::vec2 const &size, Rectangle2i *src_rect, Flip_Mode flip_mode, glm::vec4 const &color) {
+void render_quad(Render_Commands *rc, Texture *texture, Vector2 const &position, Vector2 const &size, Rectangle2i *src_rect, Flip_Mode flip_mode, Vector4 const &color) {
     if (!texture) texture = white_texture;
     
     auto command = get_current_quads(rc, 4, 6, texture);
     assert(command);
 
-    glm::vec2 p0 = position;
-    glm::vec2 p1(position.x + size.x, position.y);
-    glm::vec2 p2 = position + size;
-    glm::vec2 p3(position.x, position.y + size.y);
+    Vector2 p0 = position;
+    Vector2 p1 = v2(position.x + size.x, position.y);
+    Vector2 p2 = position + size;
+    Vector2 p3 = v2(position.x, position.y + size.y);
 
-    glm::vec2 uv0(0, 0);
-    glm::vec2 uv1(1, 0);
-    glm::vec2 uv2(1, 1);
-    glm::vec2 uv3(0, 1);
+    Vector2 uv0 = v2(0, 0);
+    Vector2 uv1 = v2(1, 0);
+    Vector2 uv2 = v2(1, 1);
+    Vector2 uv3 = v2(0, 1);
 
     if (src_rect) {
         assert(texture->width > 0);
@@ -596,7 +596,7 @@ void render_quad(Render_Commands *rc, Texture *texture, glm::vec2 const &positio
               p3, color, uv3);    
 }
 
-void render_triangle(Render_Commands *rc, glm::vec2 const &p0, glm::vec2 const &p1, glm::vec2 const &p2, glm::vec4 const &color) {
+void render_triangle(Render_Commands *rc, Vector2 const &p0, Vector2 const &p1, Vector2 const &p2, Vector4 const &color) {
     auto command = get_current_quads(rc, 3, 3, white_texture);
     assert(command);
 
@@ -623,34 +623,27 @@ void render_triangle(Render_Commands *rc, glm::vec2 const &p0, glm::vec2 const &
     rc->num_indices  += 3;
 }
 
-static glm::vec2 get_vec2(float theta) {
-    float ct = glm::cos(theta);
-    float st = glm::sin(theta);
-
-    return glm::vec2(ct, st);
-}
-
-void render_circle(Render_Commands *rc, glm::vec2 const &center, float radius, glm::vec4 const &color) {
+void render_circle(Render_Commands *rc, Vector2 const &center, float radius, Vector4 const &color) {
     const int NUM_TRIANGLES = 100;
-    float dtheta = (2.0f * glm::pi<float>()) / NUM_TRIANGLES;
+    float dtheta = TAU / NUM_TRIANGLES;
     float r = radius;
 
     for (int i = 0; i < NUM_TRIANGLES; i++) {
         float theta0 = i * dtheta;
         float theta1 = (i+1) * dtheta;
 
-        glm::vec2 v0 = get_vec2(theta0);
-        glm::vec2 v1 = get_vec2(theta1);
+        Vector2 v0 = get_vec2(theta0);
+        Vector2 v1 = get_vec2(theta1);
 
-        glm::vec2 p0 = center;
-        glm::vec2 p1 = center + r * v0;
-        glm::vec2 p2 = center + r * v1;
+        Vector2 p0 = center;
+        Vector2 p1 = center + r * v0;
+        Vector2 p2 = center + r * v1;
 
         render_triangle(rc, p0, p1, p2, color);
     }
 }
 
-void render_text(Render_Commands *rc, Font *font, char *text, int x, int y, glm::vec4 const &color) {
+void render_text(Render_Commands *rc, Font *font, char *text, int x, int y, Vector4 const &color) {
     for (char *at = text; *at; at++) {
         Glyph *glyph = &font->glyphs[*at];
         if (!glyph) continue;
@@ -661,11 +654,11 @@ void render_text(Render_Commands *rc, Font *font, char *text, int x, int y, glm:
         }
 
         if (!is_space(*at)) {
-            glm::vec2 pos;
+            Vector2 pos;
             pos.x = (float)(x + glyph->bearing_x);
             pos.y = (float)(y - (glyph->size_y - glyph->bearing_y));
 
-            glm::vec2 size;
+            Vector2 size;
             size.x = (float)glyph->size_x;
             size.y = (float)glyph->size_y;
             

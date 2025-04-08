@@ -1,6 +1,7 @@
 #include "main.h"
 
 #include <stdio.h>
+#include <GLFW/glfw3.h>
 
 char *read_entire_file(char *filepath, s64 *length_pointer) {
     char *result = NULL;
@@ -67,4 +68,8 @@ u64 get_hash(char *str) {
         hash = ((hash << 5) + hash) + *at;
     }
     return hash;
+}
+
+double get_time() {
+    return glfwGetTime();
 }

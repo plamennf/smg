@@ -4,9 +4,9 @@ struct Texture;
 struct Font;
 
 struct Render_Vertex {
-    glm::vec2 position;
-    glm::vec4 color;
-    glm::vec2 uv;
+    Vector2 position;
+    Vector4 color;
+    Vector2 uv;
 };
 
 enum Render_Command_Type : u8 {
@@ -23,7 +23,7 @@ enum Render_Target {
 struct Render_Target_Config {
     Render_Target render_target;
     bool clear_color;
-    glm::vec4 color;
+    Vector4 color;
 };
 
 struct Render_Command_Set_Render_Target {
@@ -89,8 +89,8 @@ void set_render_target(Render_Commands *commands, Render_Target_Config config);
 Render_Setup default_render_setup();
 void set_render_setup(Render_Commands *rc, Render_Setup setup);
 
-void render_quad(Render_Commands *commands, Texture *texture, glm::vec2 const &position, glm::vec2 const &size, glm::vec4 const &color);
-void render_quad(Render_Commands *commands, Texture *texture, glm::vec2 const &position, glm::vec2 const &size, Rectangle2i *src_rect, Flip_Mode flip_mode, glm::vec4 const &color);
+void render_quad(Render_Commands *commands, Texture *texture, Vector2 const &position, Vector2 const &size, Vector4 const &color);
+void render_quad(Render_Commands *commands, Texture *texture, Vector2 const &position, Vector2 const &size, Rectangle2i *src_rect, Flip_Mode flip_mode, Vector4 const &color);
 
-void render_circle(Render_Commands *rc, glm::vec2 const &center, float radius, glm::vec4 const &color);
-void render_text(Render_Commands *rc, Font *font, char *text, int x, int y, glm::vec4 const &color);
+void render_circle(Render_Commands *rc, Vector2 const &center, float radius, Vector4 const &color);
+void render_text(Render_Commands *rc, Font *font, char *text, int x, int y, Vector4 const &color);
