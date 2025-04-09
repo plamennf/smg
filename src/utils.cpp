@@ -83,6 +83,101 @@ bool strings_match(char *a, char *b) {
     return *a == 0 && *b == 0;
 }
 
+char *trim_spaces(char *s) {
+    s = trim_spaces_beginning(s);
+    s = trim_spaces_trailing(s);
+    return s;
+}
+
+char *trim_spaces_beginning(char *s) {
+    if (!s) return NULL;
+
+    while (is_space(*s)) {
+        s++;
+    }
+
+    return s;
+}
+
+char *trim_spaces_trailing(char *s) {
+    if (!s) return NULL;
+    
+    char *end = s + string_length(s) - 1;
+    while (end > s && is_space(*end)) end--;
+
+    end[1] = 0;
+
+    return s;
+}
+
+char *consume_next_line(char **text_ptr) {
+    char *t = *text_ptr;
+    if (!*t) return NULL;
+
+    char *s = t;
+
+    while (*t && (*t != '\n') && (*t != '\r')) t++;
+
+    char *end = t;
+    if (*t) {
+        end++;
+
+        if (*t == '\r') {
+            if (*end == '\n') ++end;
+        }
+
+        *t = '\0';
+    }
+    
+    *text_ptr = end;
+    
+    return s;
+}
+
+bool starts_with(char *a, char *b) {
+    if (a == b) return true;
+    if (!a || !b) return false;
+
+    s64 a_len = string_length(a);
+    s64 b_len = string_length(b);
+    if (a_len < b_len) return false;
+
+    for (s64 i = 0; i < b_len; i++) {
+        if (a[i] != b[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void split_line(char *s, char c, Array <char *> &strings) {
+    if (!s) return;
+
+    s = trim_spaces(s);
+
+    char buf[4096];
+    int buf_len = 0;
+    while (*s && !is_end_of_line(*s)) {
+        if (*s == c) {
+            buf[buf_len] = 0;
+            strings.add(copy_string(buf));
+            buf_len = 0;
+            s++;
+
+            s = trim_spaces(s);
+        }
+
+        buf[buf_len++] = *s;
+        s++;
+    }
+
+    if (buf_len > 0) {
+        buf[buf_len] = 0;
+        strings.add(copy_string(buf));
+    }
+}
+
 bool is_end_of_line(char c) {
     bool result = ((c == '\n') ||
                    (c == '\r'));

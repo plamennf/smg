@@ -7,6 +7,7 @@
 #include "input.h"
 #include "world.h"
 
+#include "tilemap.h"
 #include "entity_hero.h"
 #include "entity_light.h"
 
@@ -15,8 +16,15 @@
 static int fps_cap = 60;
 static World current_world;
 
-static void init_test_world() {
+static bool init_test_world() {
     world_init(&current_world, v2i(16, 9));
+
+    current_world.tilemap = new Tilemap();
+    if (!load_tilemap(current_world.tilemap, "data/tilemaps/test.tm")) {
+        return false;
+    }
+
+    current_world.size = v2i(current_world.tilemap->width, current_world.tilemap->height);
     
     Hero *hero     = make_hero(&current_world);
     hero->position = v2(0, 0);
@@ -29,6 +37,8 @@ static void init_test_world() {
     light->color    = v3(1, 0.5f, 0.2f);
 
     hero->light_id = light->id;
+
+    return true;
 }
 
 static void render_frame(Render_Commands *rc, float dt) {

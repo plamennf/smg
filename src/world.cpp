@@ -6,6 +6,7 @@
 
 #include "mt19937-64.h"
 
+#include "tilemap.h"
 #include "entity_hero.h"
 #include "entity_light.h"
 
@@ -52,6 +53,10 @@ void world_update(World *world, float dt) {
 }
 
 void world_render(World *world, Render_Commands *rc) {
+    if (world->tilemap) {
+        render_tilemap(rc, world->tilemap, world);
+    }
+    
     for (int i = 0; i < world->entity_lookup.allocated; i++) {
         if (!world->entity_lookup.occupancy_mask[i]) continue;
         Entity *e = world->entity_lookup.buckets[i].value;
@@ -73,7 +78,7 @@ void world_render_lights(World *world, Render_Commands *rc) {
         Light *light = (Light *)e;
         
         Vector2 screen_space_position = world_space_to_screen_space(world, e->position);
-        float   screen_space_radius   = (light->radius / (float)world->size.y) * render_height;
+        float screen_space_radius = (light->radius / (float)world->size.y) * render_height;
 
         Vector4 color = v4(light->color, 1.0f);
         

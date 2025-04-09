@@ -9,6 +9,14 @@ s64 string_length(char *s);
 char *copy_string(char *s);
 bool strings_match(char *a, char *b);
 
+char *trim_spaces(char *line);
+char *trim_spaces_beginning(char *line);
+char *trim_spaces_trailing(char *line);
+
+char *consume_next_line(char **text_ptr);
+bool starts_with(char *a, char *b);
+void split_line(char *s, char c, Array <char *> &strings);
+
 bool is_end_of_line(char c);
 bool is_space(char c);
 

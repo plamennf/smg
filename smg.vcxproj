@@ -124,6 +124,7 @@
     </ClCompile>
     <ClCompile Include="src\mt19937-64.cpp" />
     <ClCompile Include="src\render.cpp" />
+    <ClCompile Include="src\tilemap.cpp" />
     <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\window.cpp" />
     <ClCompile Include="src\world.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="src\main.h" />
     <ClInclude Include="src\mt19937-64.h" />
     <ClInclude Include="src\render.h" />
+    <ClInclude Include="src\tilemap.h" />
     <ClInclude Include="src\utils.h" />
     <ClInclude Include="src\window.h" />
     <ClInclude Include="src\world.h" />

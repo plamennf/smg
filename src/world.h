@@ -7,9 +7,13 @@ struct Render_Commands;
 struct Hero;
 struct Light;
 
+struct Tilemap;
+
 struct World {
     Hash_Table<u64, Entity *> entity_lookup;
     Vector2i size;
+
+    Tilemap *tilemap;
 };
 
 void world_init(World *world, Vector2i size);
