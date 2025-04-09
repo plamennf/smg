@@ -27,7 +27,7 @@ static bool init_test_world() {
     current_world.size = v2i(current_world.tilemap->width, current_world.tilemap->height);
     
     Hero *hero     = make_hero(&current_world);
-    hero->position = v2(0, 0);
+    hero->position = v2(5, 5);
     hero->size     = v2(2, 2);
     hero->texture  = find_or_load_texture("BRAND_NEW_PACHI_SPRITE1");
 

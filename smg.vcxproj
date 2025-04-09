@@ -115,6 +115,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\assets.cpp" />
+    <ClCompile Include="src\entity_hero.cpp" />
     <ClCompile Include="src\font.cpp" />
     <ClCompile Include="src\input.cpp" />
     <ClCompile Include="src\main.cpp" />

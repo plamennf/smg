@@ -17,28 +17,6 @@ void world_init(World *world, Vector2i size) {
     world->size = size;
 }
 
-static void update_single_hero(Hero *hero, float dt) {
-    Vector2 move_dir = {};
-
-    if (is_key_down(KEY_A)) move_dir.x -= 1.0f;
-    if (is_key_down(KEY_D)) move_dir.x += 1.0f;
-    
-    if (is_key_down(KEY_W)) move_dir.y += 1.0f;
-    if (is_key_down(KEY_S)) move_dir.y -= 1.0f;
-
-    move_dir = normalize_or_zero(move_dir);
-
-    float speed = 5.0f;
-    
-    hero->position += move_dir * speed * dt;
-
-    Entity *light_e = get_entity_by_id(hero->world, hero->light_id);
-    if (light_e) {
-        Light *light = (Light *)light_e;
-        light->position = hero->position + (0.5f * hero->size);
-    }
-}
-
 void world_update(World *world, float dt) {
     for (int i = 0; i < world->entity_lookup.allocated; i++) {
         if (!world->entity_lookup.occupancy_mask[i]) continue;
@@ -46,7 +24,7 @@ void world_update(World *world, float dt) {
 
         switch (e->type) {
             case ENTITY_TYPE_HERO: {
-                update_single_hero((Hero *)e, dt);
+                update_single_hero((Hero *)e, dt, world->tilemap);
             } break;
         }
     }

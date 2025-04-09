@@ -21,3 +21,6 @@ struct Tilemap {
 
 bool load_tilemap(Tilemap *tilemap, char *filepath);
 void render_tilemap(Render_Commands *rc, Tilemap *tilemap, World *world);
+
+u8 get_tile_at(Tilemap *tilemap, float x, float y);
+bool is_tile_collidable(Tilemap *tilemap, u8 tile);

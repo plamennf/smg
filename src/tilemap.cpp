@@ -248,3 +248,24 @@ void render_tilemap(Render_Commands *rc, Tilemap *tilemap, World *world) {
         }
     }
 }
+
+u8 get_tile_at(Tilemap *tilemap, float x, float y) {
+    if (!tilemap) return 0;
+    if (x < 0.0f || x > (float)tilemap->width)  return 0;
+    if (y < 0.0f || y > (float)tilemap->height) return 0;
+
+    int ix = (int)x;
+    int iy = (int)y;
+    
+    return tilemap->tiles[iy * tilemap->width + ix];
+}
+
+bool is_tile_collidable(Tilemap *tilemap, u8 tile) {
+    for (int i = 0; i < tilemap->num_collidable_tile_ids; i++) {
+        if (tilemap->collidable_tile_ids[i] == tile) {
+            return true;
+        }
+    }
+
+    return false;
+}
