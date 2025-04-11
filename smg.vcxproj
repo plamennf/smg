@@ -114,6 +114,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\animation.cpp" />
     <ClCompile Include="src\assets.cpp" />
     <ClCompile Include="src\entity_hero.cpp" />
     <ClCompile Include="src\font.cpp" />
@@ -131,6 +132,7 @@
     <ClCompile Include="src\world.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\animation.h" />
     <ClInclude Include="src\array.h" />
     <ClInclude Include="src\assets.h" />
     <ClInclude Include="src\defines.h" />

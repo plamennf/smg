@@ -1,7 +1,7 @@
 #pragma once
 
 struct World;
-struct Texture;
+struct Animation;
 
 enum Entity_Type {
     ENTITY_TYPE_UNKNOWN,
@@ -17,5 +17,5 @@ struct Entity {
     Vector2 position;
     Vector2 size;
 
-    Texture *texture;
+    Animation *current_animation;
 };

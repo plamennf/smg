@@ -69,6 +69,13 @@ bool window_init(int width, int height, char *title) {
         return false;
     }
 
+    if (width == -1 || height == -1) {
+        const GLFWvidmode *mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+        width  = (int)((double)mode->width  * 2.0/3.0);
+        height = (int)((double)mode->height * 2.0/3.0);
+    }
+
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);

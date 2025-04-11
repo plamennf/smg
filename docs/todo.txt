@@ -1,4 +1,4 @@
-- Animations.
+- Fix text file parsing: Add support for empty lines and comments with #
 - Add leaf-wind thing animation
 - Buildings and make them interactable with.
 - Arena and fighting.

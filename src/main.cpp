@@ -18,7 +18,7 @@ static World current_world;
 
 static bool init_test_world() {
     world_init(&current_world, v2i(16, 9));
-
+    
     current_world.tilemap = new Tilemap();
     if (!load_tilemap(current_world.tilemap, "data/tilemaps/test.tm")) {
         return false;
@@ -29,7 +29,7 @@ static bool init_test_world() {
     Hero *hero     = make_hero(&current_world);
     hero->position = v2(5, 5);
     hero->size     = v2(2, 2);
-    hero->texture  = find_or_load_texture("BRAND_NEW_PACHI_SPRITE1");
+    hero->current_animation = find_or_load_animation("hero_idle");
 
     Light *light    = make_light(&current_world);
     light->position = hero->position;
@@ -103,7 +103,7 @@ static void render_frame(Render_Commands *rc, float dt) {
 }
 
 int main(int argc, char *argv[]) {
-    if (!window_init(2080, 1080, "Swordsman Game!")) return 1;
+    if (!window_init(-1, -1, "Swordsman Game!")) return 1;
     render_init();
 
     init_test_world();

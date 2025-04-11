@@ -3,6 +3,7 @@
 #include "assets.h"
 #include "render.h"
 #include "font.h"
+#include "animation.h"
 
 #include <stdio.h>
 
@@ -14,6 +15,7 @@ struct Resource_Info {
 
 static Array<Resource_Info<Texture>> loaded_textures;
 static Array<Resource_Info<Font>> loaded_fonts;
+static Array<Resource_Info<Animation>> loaded_animations;
 
 Texture *find_or_load_texture(char *name) {
     u64 hash = get_hash(name);
@@ -82,8 +84,33 @@ Font *find_or_load_font(char *name, int character_height) {
     }
     
     Font *font = new Font();
-    if (!load_font(font, full_path, character_height)) return NULL;
+    if (!load_font(font, full_path, character_height)) {
+        delete font;
+        return NULL;
+    }
 
     loaded_fonts.add({hash, font});
     return font;
+}
+
+Animation *find_or_load_animation(char *name) {
+    u64 hash = get_hash(name);
+    
+    for (auto info : loaded_animations) {
+        if (info.name_hash == hash) {
+            return info.data;
+        }
+    }
+
+    char full_path[4096];
+    snprintf(full_path, sizeof(full_path), "%s/%s.anim", ANIMATION_DIRECTORY, name);
+
+    Animation *animation = new Animation();
+    if (!load_animation(animation, full_path)) {
+        delete animation;
+        return NULL;
+    }
+
+    loaded_animations.add({hash, animation});
+    return animation;
 }

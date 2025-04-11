@@ -3,6 +3,7 @@
 #include "world.h"
 #include "render.h"
 #include "input.h"
+#include "animation.h"
 
 #include "mt19937-64.h"
 
@@ -27,6 +28,10 @@ void world_update(World *world, float dt) {
                 update_single_hero((Hero *)e, dt, world->tilemap);
             } break;
         }
+
+        if (e->current_animation) {
+            update_animation(e->current_animation, dt);
+        }
     }
 }
 
@@ -39,11 +44,17 @@ void world_render(World *world, Render_Commands *rc) {
         if (!world->entity_lookup.occupancy_mask[i]) continue;
         Entity *e = world->entity_lookup.buckets[i].value;
         if (e->type == ENTITY_TYPE_LIGHT) continue;
+
+        Animation *animation = e->current_animation;
+        if (!animation) continue;
+
+        Texture *texture = get_current_frame(animation);
+        if (!texture) continue;
         
         Vector2 screen_space_position = world_space_to_screen_space(world, e->position);
         Vector2 screen_space_size     = world_space_to_screen_space(world, e->size);
 
-        render_quad(rc, e->texture, screen_space_position, screen_space_size, {1, 1, 1, 1});
+        render_quad(rc, texture, screen_space_position, screen_space_size, {1, 1, 1, 1});
     }
 }
 
