@@ -17,6 +17,8 @@ char *consume_next_line(char **text_ptr);
 bool starts_with(char *a, char *b);
 void split_line(char *s, char c, Array <char *> &strings);
 
+char *find_character_from_left(char *s, char c);
+
 bool is_end_of_line(char c);
 bool is_space(char c);
 

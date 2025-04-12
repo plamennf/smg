@@ -20,7 +20,7 @@ static bool init_test_world() {
     world_init(&current_world, v2i(16, 9));
     
     current_world.tilemap = new Tilemap();
-    if (!load_tilemap(current_world.tilemap, "data/tilemaps/test.tm")) {
+    if (!load_tilemap(current_world.tilemap, "data/tilemaps/test_arena.tm")) {
         return false;
     }
 

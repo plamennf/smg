@@ -178,6 +178,18 @@ void split_line(char *s, char c, Array <char *> &strings) {
     }
 }
 
+char *find_character_from_left(char *s, char c) {
+    if (!s) return NULL;
+
+    while (1) {
+        if (!*s) return NULL;
+        if (*s == c) return s;
+        s++;
+    }
+
+    return NULL;
+}
+
 bool is_end_of_line(char c) {
     bool result = ((c == '\n') ||
                    (c == '\r'));

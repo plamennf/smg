@@ -2,60 +2,35 @@
 
 #include "animation.h"
 #include "assets.h"
+#include "text_file_handler.h"
 
 #include <stdio.h>
 
 bool load_animation(Animation *animation, char *filepath) {
-    char *file_data = read_entire_file(filepath);
-    if (!file_data) {
-        fprintf(stderr, "Failed to read file '%s'.\n", filepath);
-        return false;
-    }
-    defer(delete[] file_data);
+    Text_File_Handler handler;
+    if (!start_file(&handler, filepath)) return false;
+    defer(end_file(&handler));
 
-    char *file_data_at = file_data;
-
-    // Parse version.
-    char *line = consume_next_line(&file_data_at);
-    if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid animation file!\n", filepath);
-        return false;
-    }
-    line = trim_spaces(line);
-    if (!starts_with(line, "version")) {
-        fprintf(stderr, "Error in file '%s': Missing version directive!\n", filepath);
-        return false;
-    }
-    line += string_length("version");
-    line = trim_spaces(line);
-    if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'version'\n", filepath);
-        return false;
-    }
-    line += 1;
-    line = trim_spaces(line);
-    int version = atoi(line);
-
-    if (version <= 0 || version > ANIMATION_FILE_VERSION) {
-        fprintf(stderr, "Error in file '%s': Invalid value for version!\n", filepath);
+    if (handler.version <= 0 || handler.version > ANIMATION_FILE_VERSION) {
+        fprintf(stderr, "Invalid value for version!");
         return false;
     }
 
     // Parse sample_rate.
-    line = consume_next_line(&file_data_at);
+    char *line = consume_next_line(&handler);
     if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid animation file!\n", filepath);
+        report_error(&handler, "File is too short to be considered a valid animation file!");
         return false;
     }
     line = trim_spaces(line);
     if (!starts_with(line, "sample_rate")) {
-        fprintf(stderr, "Error in file '%s': Missing sample_rate directive!\n", filepath);
+        report_error(&handler, "Missing sample_rate directive!");
         return false;
     }
     line += string_length("sample_rate");
     line = trim_spaces(line);
     if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'sample_rate'\n", filepath);
+        report_error(&handler, "Missing '=' after 'sample_rate'");
         return false;
     }
     line += 1;
@@ -68,20 +43,20 @@ bool load_animation(Animation *animation, char *filepath) {
     float inv_sample_rate = 1.0f / (float)sample_rate;
 
     // Parse is_looping.
-    line = consume_next_line(&file_data_at);
+    line = consume_next_line(&handler);
     if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid animation file!\n", filepath);
+        report_error(&handler, "File is too short to be considered a valid animation file!");
         return false;
     }
     line = trim_spaces(line);
     if (!starts_with(line, "is_looping")) {
-        fprintf(stderr, "Error in file '%s': Missing is_looping directive!\n", filepath);
+        report_error(&handler, "Missing is_looping directive!");
         return false;
     }
     line += string_length("is_looping");
     line = trim_spaces(line);
     if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'is_looping'\n", filepath);
+        report_error(&handler, "Missing '=' after 'is_looping'");
         return false;
     }
     line += 1;
@@ -93,30 +68,25 @@ bool load_animation(Animation *animation, char *filepath) {
     } else if (strings_match(line, "false") || strings_match(line, "False") || strings_match(line, "0")) {
         is_looping = false;
     } else {
-        fprintf(stderr, "Error in file '%s': Invalid value '%s' for is_looping!\n", filepath, line);
-        fprintf(stderr, "Valid values are:\n");
-        fprintf(stderr, "    - true\n");
-        fprintf(stderr, "    - false\n");
-        fprintf(stderr, "    - 1\n");
-        fprintf(stderr, "    - 0\n");
+        report_error(&handler, "Invalid value '%s' for is_looping!\nValid values are:\n    -true\n    -false\n    - 1\n    -0", line);
         return false;
     }
 
     // Parse num_frames.
-    line = consume_next_line(&file_data_at);
+    line = consume_next_line(&handler);
     if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid animation file!\n", filepath);
+        report_error(&handler, "File is too short to be considered a valid animation file!");
         return false;
     }
     line = trim_spaces(line);
     if (!starts_with(line, "num_frames")) {
-        fprintf(stderr, "Error in file '%s': Missing num_frames directive!\n", filepath);
+        report_error(&handler, "Missing num_frames directive!");
         return false;
     }
     line += string_length("num_frames");
     line = trim_spaces(line);
     if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'num_frames'\n", filepath);
+        report_error(&handler, "Missing '=' after 'num_frames'");
         return false;
     }
     line += 1;
@@ -130,9 +100,9 @@ bool load_animation(Animation *animation, char *filepath) {
 
     animation->frames = new Texture*[num_frames];
     for (int i = 0; i < num_frames; i++) {
-        line = consume_next_line(&file_data_at);
+        line = consume_next_line(&handler);
         if (!line) {
-            fprintf(stderr, "File '%s' is too short to be considered a valid animation file: Expected '%d' frames, however less have been provided.\n", filepath, num_frames);
+            report_error(&handler, "File is too short to be considered a valid animation file: Expected '%d' frames, however less have been provided.", num_frames);
             delete[] animation->frames;
             return false;
         }

@@ -4,143 +4,110 @@
 #include "assets.h"
 #include "render.h"
 #include "world.h"
+#include "text_file_handler.h"
 
 #include <stdio.h>
 
 bool load_tilemap(Tilemap *tilemap, char *filepath) {
-    char *file_data = read_entire_file(filepath);
-    if (!file_data) {
-        fprintf(stderr, "Failed to read file '%s'.\n", filepath);
-        return false;
-    }
-    defer(delete[] file_data);
-
-    char *file_data_at = file_data;
-
-    // Parse version.
-    char *line = consume_next_line(&file_data_at);
-    if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid tilemap file!\n", filepath);
-        return false;
-    }
-
-    line = trim_spaces(line);
-    if (!starts_with(line, "version")) {
-        fprintf(stderr, "Error in file '%s': Missing version directive!\n", filepath);
-        return false;
-    }
-    line += string_length("version");
-    line = trim_spaces(line);
-    if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'version'\n", filepath);
-        return false;
-    }
-    line += 1;
-    line = trim_spaces(line);
-    int version = atoi(line);
-
-    if (version <= 0 || version > TILEMAP_FILE_VERSION) {
-        fprintf(stderr, "Error in file '%s': Invalid value for version!\n", filepath);
+    Text_File_Handler handler;
+    if (!start_file(&handler, filepath)) return false;
+    defer(end_file(&handler));
+    
+    if (handler.version <= 0 || handler.version > TILEMAP_FILE_VERSION) {
+        report_error(&handler, "Invalid value for version!");
         return false;
     }
 
     // Parse width.
-    line = consume_next_line(&file_data_at);
+    char *line = consume_next_line(&handler);
     if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid tilemap file!\n", filepath);
+        report_error(&handler, "File is too short to be considered a valid tilemap file!", filepath);
         return false;
     }
-
-    line = trim_spaces(line);
     if (!starts_with(line, "width")) {
-        fprintf(stderr, "Error in file '%s': Missing width directive!\n", filepath);
+        report_error(&handler, "Missing width directive!");
         return false;
     }
     line += string_length("width");
     line = trim_spaces(line);
     if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'width'\n", filepath);
+        report_error(&handler, "Missing '=' after 'width'");
         return false;
     }
     line += 1;
     line = trim_spaces(line);
     int width = atoi(line);
     if (width <= 0) {
-        fprintf(stderr, "Error in file '%s': Invalid value for width!\n", filepath);
+        report_error(&handler, "Invalid value for width!", filepath);
         return false;
     }
 
     // Parse height.
-    line = consume_next_line(&file_data_at);
+    line = consume_next_line(&handler);
     if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid tilemap file!\n", filepath);
+        report_error(&handler, "File is too short to be considered a valid tilemap file!");
         return false;
     }
-
-    line = trim_spaces(line);
     if (!starts_with(line, "height")) {
-        fprintf(stderr, "Error in file '%s': Missing height directive!\n", filepath);
+        report_error(&handler, "Missing height directive!");
         return false;
     }
     line += string_length("height");
     line = trim_spaces(line);
     if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'height'\n", filepath);
+        report_error(&handler, "Missing '=' after 'height'");
         return false;
     }
     line += 1;
     line = trim_spaces(line);
     int height = atoi(line);
-    if (width <= 0) {
-        fprintf(stderr, "Error in file '%s': Invalid value for height!\n", filepath);
+    if (height <= 0) {
+        report_error(&handler, "Invalid value for height!");
         return false;
     }
 
     // Parse num_textures.
-    line = consume_next_line(&file_data_at);
+    line = consume_next_line(&handler);
     if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid tilemap file!\n", filepath);
+        report_error(&handler, "File is too short to be considered a valid tilemap file!");
         return false;
     }
-
-    line = trim_spaces(line);
     if (!starts_with(line, "num_textures")) {
-        fprintf(stderr, "Error in file '%s': Missing num_textures directive!\n", filepath);
+        report_error(&handler, "Missing num_textures directive!");
         return false;
     }
     line += string_length("num_textures");
     line = trim_spaces(line);
     if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'num_textures'\n", filepath);
+        report_error(&handler, "Missing '=' after 'num_textures'");
         return false;
     }
     line += 1;
     line = trim_spaces(line);
     int num_textures = atoi(line);
     if (width <= 0) {
-        fprintf(stderr, "Error in file '%s': Invalid value for num_textures!\n", filepath);
+        report_error(&handler, "Invalid value for num_textures!");
         return false;
     }    
 
     // Parse textures.
     Texture **textures = new Texture*[num_textures];
     for (int i = 0; i < num_textures; i++) {
-        line = consume_next_line(&file_data_at);
+        line = consume_next_line(&handler);
         if (!line) {
-            fprintf(stderr, "File '%s' is too short to be considered a valid tilemap file!\n", filepath);
+            report_error(&handler, "File is too short to be considered a valid tilemap file!");
             delete[] textures;
             return false;
         }
-        line = trim_spaces(line);
         if (!starts_with(line, "texture")) {
-            fprintf(stderr, "Error in file '%s': Missing texture directive!\n", filepath);
+            report_error(&handler, "Missing texture directive!");
             delete[] textures;
             return false;
         }
         line += string_length("texture");
         line = trim_spaces(line);
         if (!starts_with(line, "=")) {
-            fprintf(stderr, "Error in file '%s': Missing '=' after 'texture'\n", filepath);
+            report_error(&handler, "Missing '=' after 'texture'");
             delete[] textures;
             return false;
         }
@@ -152,22 +119,22 @@ bool load_tilemap(Tilemap *tilemap, char *filepath) {
     }
 
     // Parse collidable_tile_ids.
-    line = consume_next_line(&file_data_at);
+    line = consume_next_line(&handler);
     if (!line) {
-        fprintf(stderr, "File '%s' is too short to be considered a valid tilemap file!\n", filepath);
+        report_error(&handler, "File is too short to be considered a valid tilemap file!");
         delete[] textures;
         return false;
     }
     line = trim_spaces(line);
     if (!starts_with(line, "collidable_tile_ids")) {
-        fprintf(stderr, "Error in file '%s': Missing collidable_tile_ids directive!\n", filepath);
+        report_error(&handler, "Missing collidable_tile_ids directive!");
         delete[] textures;
         return false;
     }
     line += string_length("collidable_tile_ids");
     line = trim_spaces(line);
     if (!starts_with(line, "=")) {
-        fprintf(stderr, "Error in file '%s': Missing '=' after 'collidable_tile_ids'\n", filepath);
+        report_error(&handler, "Missing '=' after 'collidable_tile_ids'");
         delete[] textures;
         return false;
     }
@@ -191,9 +158,9 @@ bool load_tilemap(Tilemap *tilemap, char *filepath) {
     defer(delete[] lines);
 
     for (int i = 0; i < height; i++) {
-        lines[i] = consume_next_line(&file_data_at);
+        lines[i] = consume_next_line(&handler);
         if (!lines[i]) {
-            fprintf(stderr, "File '%s' is too short to be considered a valid tilemap file!\n", filepath);
+            report_error(&handler, "File is too short to be considered a valid tilemap file!");
             delete[] textures;
             return false;
         }
@@ -201,14 +168,14 @@ bool load_tilemap(Tilemap *tilemap, char *filepath) {
 
     u8 *tiles = new u8[width * height];
     for (int y = height - 1; y >= 0; y--) {
-        line = lines[y];
+        line = lines[height - y - 1];
 
         Array <char *> id_strings;
         defer(for(char *s : id_strings) delete[] s);
         split_line(line, ',', id_strings);
 
         if (id_strings.count != width) {
-            fprintf(stderr, "Error in file '%s': Row doesn't contain valid number of ids!\n", filepath);
+            report_error(&handler, "Row doesn't contain valid number of ids!");
             delete[] textures;
             return false;
         }
