@@ -28,6 +28,12 @@ static bool init_test_world() {
     }
 
     current_world.size = v2i(current_world.tilemap->width, current_world.tilemap->height);
+
+#ifdef DO_NIGHT
+    current_world.background_texture = find_or_load_texture("5/7");
+#else
+    current_world.background_texture = find_or_load_texture("8/5");
+#endif
     
     Hero *hero     = make_hero(&current_world);
     hero->position = v2(0, 1);

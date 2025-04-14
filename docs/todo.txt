@@ -1,4 +1,6 @@
+- Camera.
+- Enemies.
+- Fighting.
+- Abilities.
 - Add leaf-wind thing animation
 - Buildings and make them interactable with.
-- Arena(2D Sideways Platformer Style) and fighting.
-- Abilities.

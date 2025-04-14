@@ -525,6 +525,15 @@ inline Vector2i make_vector2i(int x, int y) {
     return result;
 }
 
+inline Vector2 to_vec2(Vector2i v) {
+    Vector2 result;
+
+    result.x = (float)v.x;
+    result.y = (float)v.y;
+
+    return result;
+}
+
 struct Matrix4 {
     union {
         struct {

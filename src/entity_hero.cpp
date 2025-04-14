@@ -8,7 +8,7 @@
 
 const float GRAVITY = -30.0f;
 const float MOVE_SPEED = 8.0f;
-const float JUMP_FORCE = 16.0f;
+const float JUMP_FORCE = 15.0f;
 const float MAX_FALL_SPEED = -25.0f;
 const float FAST_FALL_MULTIPLIER = 1.5f;
 

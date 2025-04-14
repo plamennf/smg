@@ -36,6 +36,13 @@ void world_update(World *world, float dt) {
 }
 
 void world_render(World *world, Render_Commands *rc) {
+    if (world->background_texture) {
+        // Y-Position is 1, because I assume that when we have a background texture, that means we are in an arena/fight and when you are in an arena there is going to be only one unit of platform underneath the player.
+        Vector2 screen_space_position = world_space_to_screen_space(world, v2(0, 1));
+        Vector2 screen_space_size     = world_space_to_screen_space(world, to_vec2(world->size));
+        render_quad(rc, world->background_texture, screen_space_position, screen_space_size, v4(1, 1, 1, 1));
+    }
+    
     if (world->tilemap) {
         render_tilemap(rc, world->tilemap, world);
     }

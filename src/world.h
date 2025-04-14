@@ -3,6 +3,7 @@
 #include "entity.h"
 
 struct Render_Commands;
+struct Texture;
 
 struct Hero;
 struct Light;
@@ -13,6 +14,8 @@ struct World {
     Hash_Table<u64, Entity *> entity_lookup;
     Vector2i size;
 
+    Texture *background_texture;
+    
     Tilemap *tilemap;
 };
 
