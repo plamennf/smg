@@ -237,3 +237,10 @@ u64 get_time_nanoseconds() {
 }
 
 #endif
+
+void clamp(float *value, float min, float max) {
+    if (!value) return;
+
+    if (*value < min) *value = min;
+    if (*value > max) *value = max;
+}

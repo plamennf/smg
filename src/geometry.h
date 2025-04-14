@@ -182,6 +182,18 @@ inline Vector2 absolute_value(Vector2 v) {
     return result;
 }
 
+inline Vector2 rotate(Vector2 v, float theta) {
+    float ct = cosf(theta);
+    float st = sinf(theta);
+
+    Vector2 result;
+
+    result.x = v.x*ct - v.y*st;
+    result.y = v.x*st + v.y*ct;
+
+    return result;
+}
+
 struct Vector3 {
     union {
         struct {

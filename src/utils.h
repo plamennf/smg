@@ -26,3 +26,5 @@ u64 get_hash(u64 x);
 u64 get_hash(char *str);
 
 u64 get_time_nanoseconds();
+
+void clamp(float *value, float min, float max);

@@ -259,15 +259,101 @@ Texture *load_texture_from_memory(int width, int height, u8 *data) {
     return texture;
 }
 
+static bool is_non_empty_rgba(u8 *pixel) {
+    return pixel[3] > 0; // Alpha is greater than 0.
+}
+
+static u8 *remove_empty_edges(u8 *data, int *width_pointer, int *height_pointer) {
+    assert(width_pointer);
+    assert(height_pointer);
+
+    int width  = *width_pointer;
+    int height = *height_pointer;
+    
+    int top = -1, bottom = -1, left = -1, right = -1;
+
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            u8 *pixel = &data[(row * width + col) * 4];
+            if (is_non_empty_rgba(pixel)) {
+                top = row;
+                break;
+            }
+        }
+        if (top != -1) break;
+    }
+
+    for (int row = height - 1; row >= 0; row--) {
+        for (int col = 0; col < width; col++) {
+            u8 *pixel = &data[(row * width + col) * 4];
+            if (is_non_empty_rgba(pixel)) {
+                bottom = row;
+                break;
+            }
+        }
+        if (bottom != -1) break;
+    }
+
+    for (int col = 0; col < width; col++) {
+        for (int row = 0; row < height; row++) {
+            u8 *pixel = &data[(row * width + col) * 4];
+            if (is_non_empty_rgba(pixel)) {
+                left = col;
+                break;
+            }
+        }
+        if (left != -1) break;
+    }
+
+    for (int col = width - 1; col >= 0; col--) {
+        for (int row = 0; row < height; row++) {
+            u8 *pixel = &data[(row * width + col) * 4];
+            if (is_non_empty_rgba(pixel)) {
+                right = col;
+                break;
+            }
+        }
+        if (right != -1) break;
+    }
+
+    int new_width  = (right  - left) + 1;
+    int new_height = (bottom - top)  + 1;
+
+    u8 *new_data = new u8[new_width * new_height * 4];
+
+    for (int y = 0; y < new_height; y++) {
+        for (int x = 0; x < new_width; x++) {
+            u8 *dest   = &new_data[(y * new_width + x) * 4];
+            u8 *source = &data[((y + top) * width + (x + left)) * 4];
+
+            dest[0] = source[0];
+            dest[1] = source[1];
+            dest[2] = source[2];
+            dest[3] = source[3];
+        }
+    }
+
+    if (width_pointer)  *width_pointer  = new_width;
+    if (height_pointer) *height_pointer = new_height;
+    
+    return new_data;
+}
+
 Texture *load_texture_from_file(char *filepath) {
     int width, height, channels;
     stbi_set_flip_vertically_on_load(1);
-    u8 *data = stbi_load(filepath, &width, &height, &channels, 4);
-    if (!data) {
+    u8 *stb_data = stbi_load(filepath, &width, &height, &channels, 4);
+    if (!stb_data) {
         fprintf(stderr, "Failed to load image '%s'.\n", filepath);
         return NULL;
     }
+    defer(stbi_image_free(stb_data));
 
+    u8 *data = remove_empty_edges(stb_data, &width, &height);
+    defer(delete[] data);
+
+    printf("Loading image(%dx%d): %s\n", width, height, filepath);
+    
     Texture *texture = load_texture_from_memory(width, height, data);
     return texture;
 }
@@ -594,6 +680,48 @@ void render_quad(Render_Commands *rc, Texture *texture, Vector2 const &position,
               p1, color, uv1,
               p2, color, uv2,
               p3, color, uv3);    
+}
+
+void render_quad(Render_Commands *rc, Texture *texture, Vector2 const &position, Vector2 const &size, float rotation, Vector4 const &color) {
+    if (!texture) texture = white_texture;
+    
+    auto command = get_current_quads(rc, 4, 6, texture);
+    assert(command);
+
+    Vector2 center = v2(position.x + size.x * 0.5f, position.y + size.y * 0.5f);
+
+    float hw = size.x * 0.5f;
+    float hh = size.y * 0.5f;
+    
+    Vector2 p0 = v2(-hw, -hh);
+    Vector2 p1 = v2(+hw, -hh);
+    Vector2 p2 = v2(+hw, +hh);
+    Vector2 p3 = v2(-hw, +hh);
+
+    if (rotation) {
+        float theta = to_radians(rotation);
+        
+        p0 = rotate(p0, theta);
+        p1 = rotate(p1, theta);
+        p2 = rotate(p2, theta);
+        p3 = rotate(p3, theta);
+    }
+
+    p0 += center;
+    p1 += center;
+    p2 += center;
+    p3 += center;
+
+    Vector2 uv0 = v2(0, 0);
+    Vector2 uv1 = v2(1, 0);
+    Vector2 uv2 = v2(1, 1);
+    Vector2 uv3 = v2(0, 1);
+
+    push_quad(rc, command,
+              p0, color, uv0,
+              p1, color, uv1,
+              p2, color, uv2,
+              p3, color, uv3);
 }
 
 void render_triangle(Render_Commands *rc, Vector2 const &p0, Vector2 const &p1, Vector2 const &p2, Vector4 const &color) {

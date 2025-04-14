@@ -89,8 +89,9 @@ void set_render_target(Render_Commands *commands, Render_Target_Config config);
 Render_Setup default_render_setup();
 void set_render_setup(Render_Commands *rc, Render_Setup setup);
 
-void render_quad(Render_Commands *commands, Texture *texture, Vector2 const &position, Vector2 const &size, Vector4 const &color);
-void render_quad(Render_Commands *commands, Texture *texture, Vector2 const &position, Vector2 const &size, Rectangle2i *src_rect, Flip_Mode flip_mode, Vector4 const &color);
+void render_quad(Render_Commands *rc, Texture *texture, Vector2 const &position, Vector2 const &size, Vector4 const &color);
+void render_quad(Render_Commands *rc, Texture *texture, Vector2 const &position, Vector2 const &size, Rectangle2i *src_rect, Flip_Mode flip_mode, Vector4 const &color);
+void render_quad(Render_Commands *rc, Texture *texture, Vector2 const &position, Vector2 const &size, float rotation, Vector4 const &color);
 
 void render_circle(Render_Commands *rc, Vector2 const &center, float radius, Vector4 const &color);
 void render_text(Render_Commands *rc, Font *font, char *text, int x, int y, Vector4 const &color);

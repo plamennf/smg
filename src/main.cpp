@@ -12,6 +12,9 @@
 #include "entity_light.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+
+//#define DO_NIGHT
 
 static int fps_cap = 60;
 static World current_world;
@@ -27,15 +30,25 @@ static bool init_test_world() {
     current_world.size = v2i(current_world.tilemap->width, current_world.tilemap->height);
     
     Hero *hero     = make_hero(&current_world);
-    hero->position = v2(5, 5);
-    hero->size     = v2(2, 2);
+    hero->position = v2(0, 1);
+    hero->size     = v2(1.1f, 2);
     hero->current_animation = find_or_load_animation("hero_idle");
+    hero->movement_type = HERO_MOVEMENT_PLATFORMER;
 
     Light *light    = make_light(&current_world);
     light->position = hero->position;
+#ifdef DO_NIGHT
     light->radius   = hero->size.y * 0.5f;
-    light->color    = v3(1, 0.5f, 0.2f);
+#else
+    light->radius   = 2.0f*current_world.size.y;
+#endif
 
+#ifdef DO_NIGHT
+    light->color    = v3(1, 0.5f, 0.2f);
+#else
+    light->color    = v3(1, 1, 1);
+#endif
+    
     hero->light_id = light->id;
 
     return true;
@@ -47,7 +60,13 @@ static void render_frame(Render_Commands *rc, float dt) {
         Render_Target_Config config = {};
         config.render_target = RENDER_TARGET_LIGHTS;
         config.clear_color   = true;
+
+#ifdef DO_NIGHT
         config.color         = {19/255.0f, 24/255.0f, 98/255.0f, 1.0f};
+#else
+        config.color         = {64/255.0f, 156/255.0f, 1.0f, 1.0f};
+#endif
+        
         set_render_target(rc, config);
     
         Render_Setup setup = default_render_setup();
@@ -103,6 +122,8 @@ static void render_frame(Render_Commands *rc, float dt) {
 }
 
 int main(int argc, char *argv[]) {
+    srand((u32)get_time_nanoseconds());
+    
     if (!window_init(-1, -1, "Swordsman Game!")) return 1;
     render_init();
 
@@ -119,10 +140,12 @@ int main(int argc, char *argv[]) {
         if (is_key_pressed(KEY_F11)) window_toggle_fullscreen();
         
         world_update(&current_world, (float)dt);
-        
-        Render_Commands *render_commands = render_begin_frame();
-        render_frame(render_commands, (float)dt);
-        render_end_frame(render_commands);
+
+        if (window_width > 0 && window_height > 0) {
+            Render_Commands *render_commands = render_begin_frame();
+            render_frame(render_commands, (float)dt);
+            render_end_frame(render_commands);
+        }
         
         window_swap_buffers();
         window_sync(fps_cap);
