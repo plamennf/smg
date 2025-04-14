@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#define DO_NIGHT
+#define DO_NIGHT
 
 static int fps_cap = 60;
 static World current_world;
@@ -45,7 +45,7 @@ static bool init_test_world() {
     Light *light    = make_light(&current_world);
     light->position = hero->position;
 #ifdef DO_NIGHT
-    light->radius   = hero->size.y * 0.5f;
+    light->radius   = hero->size.y * 0.5f + 0.1f;
 #else
     light->radius   = 2.0f*current_world.size.y;
 #endif
@@ -64,6 +64,22 @@ static bool init_test_world() {
     enemy->current_animation = find_or_load_animation("imp_idle");
     enemy->hero_id  = hero->id;
     enemy->speed    = 3.0f;
+
+    Light *enemy_light = make_light(&current_world);
+    enemy_light->position = enemy->position;
+#ifdef DO_NIGHT
+    enemy_light->radius = enemy->size.y * 0.5f + 0.1f;
+#else
+    enemy_light->radius = 0.0f;
+#endif
+
+#ifdef DO_NIGHT
+    enemy_light->color = v3(1, 0, 0);
+#else
+    enemy_light->color = v3(1, 1, 1);
+#endif
+
+    enemy->light_id = enemy_light->id;
     
     return true;
 }
