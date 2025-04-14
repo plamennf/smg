@@ -7,6 +7,7 @@ struct Texture;
 
 struct Hero;
 struct Light;
+struct Enemy;
 
 struct Tilemap;
 
@@ -31,3 +32,4 @@ Entity *get_entity_by_id(World *world, u64 id);
 
 Hero *make_hero(World *world);
 Light *make_light(World *world);
+Enemy *make_enemy(World *world);

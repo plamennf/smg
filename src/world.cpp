@@ -10,6 +10,7 @@
 #include "tilemap.h"
 #include "entity_hero.h"
 #include "entity_light.h"
+#include "entity_enemy.h"
 
 void world_init(World *world, Vector2i size) {
     unsigned long long init[] = {(u64)size.x, (u64)size.y};
@@ -26,6 +27,10 @@ void world_update(World *world, float dt) {
         switch (e->type) {
             case ENTITY_TYPE_HERO: {
                 update_single_hero((Hero *)e, dt, world->tilemap);
+            } break;
+
+            case ENTITY_TYPE_ENEMY: {
+                update_single_enemy((Enemy *)e, dt);
             } break;
         }
 
@@ -61,7 +66,7 @@ void world_render(World *world, Render_Commands *rc) {
         Vector2 screen_space_position = world_space_to_screen_space(world, e->position);
         Vector2 screen_space_size     = world_space_to_screen_space(world, e->size);
 
-        render_quad(rc, texture, screen_space_position, screen_space_size, {1, 1, 1, 1});
+        render_quad(rc, texture, screen_space_position, screen_space_size, NULL, e->flip_mode, {1, 1, 1, 1});
     }
 }
 
@@ -135,6 +140,8 @@ static void register_entity(World *world, Entity *e, Entity_Type type) {
     e->world = world;
     e->type  = type;
 
+    e->flip_mode = FLIP_MODE_NONE;
+
     world->entity_lookup.add(id, e);
 }
 
@@ -148,4 +155,10 @@ Light *make_light(World *world) {
     Light *light = new Light();
     register_entity(world, light, ENTITY_TYPE_LIGHT);
     return light;
+}
+
+Enemy *make_enemy(World *world) {
+    Enemy *enemy = new Enemy();
+    register_entity(world, enemy, ENTITY_TYPE_ENEMY);
+    return enemy;
 }

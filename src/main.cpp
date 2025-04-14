@@ -10,6 +10,7 @@
 #include "tilemap.h"
 #include "entity_hero.h"
 #include "entity_light.h"
+#include "entity_enemy.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -57,6 +58,13 @@ static bool init_test_world() {
     
     hero->light_id = light->id;
 
+    Enemy *enemy = make_enemy(&current_world);
+    enemy->position = v2((float)current_world.size.x - 1.0f,1.0f);
+    enemy->size     = v2(2.15f, 2.0f);
+    enemy->current_animation = find_or_load_animation("imp_idle");
+    enemy->hero_id  = hero->id;
+    enemy->speed    = 3.0f;
+    
     return true;
 }
 

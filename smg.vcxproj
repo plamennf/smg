@@ -116,6 +116,7 @@
   <ItemGroup>
     <ClCompile Include="src\animation.cpp" />
     <ClCompile Include="src\assets.cpp" />
+    <ClCompile Include="src\entity_enemy.cpp" />
     <ClCompile Include="src\entity_hero.cpp" />
     <ClCompile Include="src\font.cpp" />
     <ClCompile Include="src\input.cpp" />
@@ -138,6 +139,7 @@
     <ClInclude Include="src\assets.h" />
     <ClInclude Include="src\defines.h" />
     <ClInclude Include="src\entity.h" />
+    <ClInclude Include="src\entity_enemy.h" />
     <ClInclude Include="src\entity_hero.h" />
     <ClInclude Include="src\entity_light.h" />
     <ClInclude Include="src\font.h" />

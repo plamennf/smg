@@ -15,6 +15,18 @@ inline float to_degrees(float radians) {
     return degrees;
 }
 
+inline float move_toward(float a, float b, float amount) {
+    if (a > b) {
+        a -= amount;
+        if (a < b) a = b;
+    } else {
+        a += amount;
+        if (a > b) a = b;
+    }
+
+    return a;
+}
+
 struct Vector2 {
     union {
         struct {
@@ -190,6 +202,15 @@ inline Vector2 rotate(Vector2 v, float theta) {
 
     result.x = v.x*ct - v.y*st;
     result.y = v.x*st + v.y*ct;
+
+    return result;
+}
+
+inline Vector2 move_toward(Vector2 a, Vector2 b, float amount) {
+    Vector2 result;
+
+    result.x = move_toward(a.x, b.x, amount);
+    result.y = move_toward(a.y, b.y, amount);
 
     return result;
 }
