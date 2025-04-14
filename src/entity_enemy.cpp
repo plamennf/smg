@@ -9,7 +9,7 @@ void update_single_enemy(Enemy *enemy, float dt) {
     if (!hero_e) return;
     Hero *hero = (Hero *)hero_e;
 
-    enemy->position = move_toward(enemy->position, hero->position, enemy->speed * dt);
+    enemy->position.x = move_toward(enemy->position.x, hero->position.x, enemy->speed * dt);
 
     if (enemy->position.x < hero->position.x) {
         enemy->flip_mode = FLIP_MODE_NONE;
