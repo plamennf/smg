@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define DO_NIGHT
+//#define DO_NIGHT
 
 static int fps_cap = 60;
 static World current_world;
