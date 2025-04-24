@@ -39,7 +39,6 @@ static bool init_test_world() {
     Hero *hero     = make_hero(&current_world);
     hero->position = v2(0, 1);
     hero->size     = v2(1.1f, 2);
-    hero->current_animation = find_or_load_animation("hero_idle");
     hero->movement_type = HERO_MOVEMENT_PLATFORMER;
 
     Light *light    = make_light(&current_world);

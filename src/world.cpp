@@ -148,6 +148,7 @@ static void register_entity(World *world, Entity *e, Entity_Type type) {
 Hero *make_hero(World *world) {
     Hero *hero = new Hero();
     register_entity(world, hero, ENTITY_TYPE_HERO);
+    load_animations_for_hero(hero);
     return hero;
 }
 

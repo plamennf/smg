@@ -1,0 +1,9 @@
+version = 1
+
+sample_rate = 6
+is_looping = true
+num_frames = 4
+NewPachiSamuraLeftWalk1
+NewPachiSamuraLeftWalk2
+NewPachiSamuraLeftWalk3
+NewPachiSamuraLeftWalk4

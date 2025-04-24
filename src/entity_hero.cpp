@@ -5,6 +5,10 @@
 #include "input.h"
 #include "entity_hero.h"
 #include "entity_light.h"
+#include "animation.h"
+#include "assets.h"
+
+#include <stdio.h>
 
 const float GRAVITY = -30.0f;
 const float MOVE_SPEED = 8.0f;
@@ -15,12 +19,43 @@ const float FAST_FALL_MULTIPLIER = 1.5f;
 const float DASH_SPEED = 20.0f;
 const float DASH_DURATION = 0.2f;
 
+static void update_animation(Hero *hero) {
+    assert(hero->current_animation);
+
+    if (!hero->current_animation->is_looping && !hero->current_animation->is_completed) return;
+
+    Animation *animation = NULL;
+    switch (hero->state) {
+        case HERO_IDLE: {
+            animation = hero->idle[hero->orientation];
+        } break;
+
+        case HERO_WALKING: {
+            animation = hero->walk[hero->orientation];
+        } break;
+
+        case HERO_JUMPING: {
+            animation = hero->jump[hero->orientation];
+        } break;
+    }
+
+    if (animation == hero->current_animation) return;
+    
+    if (!animation) {
+        fprintf(stderr, "Failed to get animation for current hero state(%d) and orientation(%d)! Resetting to idle!\n", hero->state, hero->orientation);
+        return;
+    }
+
+    hero->current_animation = animation;
+    reset_animation(hero->current_animation);
+}
+
 static void update_hero_movement_platformer(Hero *hero, float dt, Tilemap *tilemap) {
     World *world = hero->world;
     
     float input_x = 0.0f;
-    if (is_key_down(KEY_A)) input_x -= 1.0f;
-    if (is_key_down(KEY_D)) input_x += 1.0f;
+    if (is_key_down(KEY_A)) {input_x -= 1.0f; hero->orientation = HERO_LOOKING_LEFT;}
+    if (is_key_down(KEY_D)) {input_x += 1.0f; hero->orientation = HERO_LOOKING_RIGHT;}
     
     if (is_key_pressed(KEY_LEFT_SHIFT) && !hero->is_dashing && input_x != 0.0f) {
         hero->is_dashing = true;
@@ -36,7 +71,7 @@ static void update_hero_movement_platformer(Hero *hero, float dt, Tilemap *tilem
     } else {
         hero->velocity.x = input_x * MOVE_SPEED;
 
-        if (is_key_down(KEY_SPACE) && hero->on_ground) {
+        if (is_key_down(KEY_W) && hero->on_ground) {
             hero->velocity.y = JUMP_FORCE;
             hero->on_ground  = false;
         }
@@ -61,6 +96,13 @@ static void update_hero_movement_platformer(Hero *hero, float dt, Tilemap *tilem
 
     clamp(&hero->position.x, 0.0f, (float)world->size.x - hero->size.x);
     clamp(&hero->position.y, 1.0f, (float)world->size.y - hero->size.y);
+
+    if (hero->is_dashing)      hero->state = HERO_IDLE;
+    else if (!hero->on_ground) hero->state = HERO_JUMPING;
+    else if (hero->velocity.x != 0.0f) hero->state = HERO_WALKING;
+    else hero->state = HERO_IDLE;
+
+    update_animation(hero);
 }
 
 void update_single_hero(Hero *hero, float dt, Tilemap *tilemap) {
@@ -68,51 +110,30 @@ void update_single_hero(Hero *hero, float dt, Tilemap *tilemap) {
         update_hero_movement_platformer(hero, dt, tilemap);
     }
     
-    /*
-    Vector2 move_dir = {};
-
-    if (is_key_down(KEY_A)) move_dir.x -= 1.0f;
-    if (is_key_down(KEY_D)) move_dir.x += 1.0f;
-    
-    if (is_key_down(KEY_W)) move_dir.y += 1.0f;
-    if (is_key_down(KEY_S)) move_dir.y -= 1.0f;
-
-    move_dir = normalize_or_zero(move_dir);
-
-    float speed = 5.0f;
-    
-    Vector2 new_position = hero->position + move_dir * speed * dt;
-
-    float tile_at_new_position_x = new_position.x;
-    float tile_at_new_position_y = new_position.y;
-    if (move_dir.x > 0.0f) {
-        tile_at_new_position_x += hero->size.x;
-    }
-    if (move_dir.y > 0.0f) {
-        tile_at_new_position_y += hero->size.y;
-    }
-    
-    u8 tile_at_new_position = get_tile_at(tilemap, tile_at_new_position_x, tile_at_new_position_y);
-    if (is_tile_collidable(tilemap, tile_at_new_position)) {
-        if (move_dir.x > 0.0f) {
-            hero->position.x = roundf(new_position.x);// - hero->size.x;
-        } else if (move_dir.x < 0.0f) {
-            hero->position.x = roundf(new_position.x);// + hero->size.x;
-        }
-
-        if (move_dir.y > 0.0f) {
-            hero->position.y = roundf(new_position.y);
-        } else if (move_dir.y < 0.0f) {
-            hero->position.y = roundf(new_position.y);
-        }
-    } else {
-        hero->position = new_position;
-    }
-    */
-    
     Entity *light_e = get_entity_by_id(hero->world, hero->light_id);
     if (light_e) {
         Light *light = (Light *)light_e;
         light->position = hero->position + (0.5f * hero->size);
     }
+}
+
+void load_animations_for_hero(Hero *hero) {
+    memset(hero->idle, 0, sizeof(hero->idle));
+    memset(hero->walk, 0, sizeof(hero->walk));
+    memset(hero->jump, 0, sizeof(hero->jump));
+    
+    hero->idle[HERO_LOOKING_LEFT]  = find_or_load_animation("hero_idle_left");
+    hero->idle[HERO_LOOKING_RIGHT] = find_or_load_animation("hero_idle_right");
+    hero->idle[HERO_LOOKING_DOWN]  = find_or_load_animation("hero_idle_front");
+    hero->idle[HERO_LOOKING_UP]    = find_or_load_animation("hero_idle_back");
+
+    hero->walk[HERO_LOOKING_LEFT]  = find_or_load_animation("hero_walk_left");
+    hero->walk[HERO_LOOKING_RIGHT] = find_or_load_animation("hero_walk_right");
+    hero->walk[HERO_LOOKING_DOWN]  = find_or_load_animation("hero_walk_front");
+    hero->walk[HERO_LOOKING_UP]    = find_or_load_animation("hero_walk_back");
+
+    hero->jump[HERO_LOOKING_LEFT]  = find_or_load_animation("hero_jump_left");
+    hero->jump[HERO_LOOKING_RIGHT] = find_or_load_animation("hero_jump_right");
+
+    hero->current_animation = hero->idle[HERO_LOOKING_DOWN];
 }
