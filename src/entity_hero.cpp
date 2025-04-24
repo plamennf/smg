@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 const float GRAVITY = -30.0f;
-const float MOVE_SPEED = 8.0f;
+const float MOVE_SPEED = 5.0f;
 const float JUMP_FORCE = 15.0f;
 const float MAX_FALL_SPEED = -25.0f;
 const float FAST_FALL_MULTIPLIER = 1.5f;
@@ -43,6 +43,7 @@ static void update_animation(Hero *hero) {
     
     if (!animation) {
         fprintf(stderr, "Failed to get animation for current hero state(%d) and orientation(%d)! Resetting to idle!\n", hero->state, hero->orientation);
+        animation = hero->idle[HERO_LOOKING_RIGHT];
         return;
     }
 
@@ -135,5 +136,5 @@ void load_animations_for_hero(Hero *hero) {
     hero->jump[HERO_LOOKING_LEFT]  = find_or_load_animation("hero_jump_left");
     hero->jump[HERO_LOOKING_RIGHT] = find_or_load_animation("hero_jump_right");
 
-    hero->current_animation = hero->idle[HERO_LOOKING_DOWN];
+    hero->current_animation = hero->idle[HERO_LOOKING_RIGHT];
 }

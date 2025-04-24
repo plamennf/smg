@@ -161,5 +161,9 @@ Light *make_light(World *world) {
 Enemy *make_enemy(World *world) {
     Enemy *enemy = new Enemy();
     register_entity(world, enemy, ENTITY_TYPE_ENEMY);
+
+    enemy->attack_cooldown = 1.5f;
+    enemy->state           = ENEMY_IDLE;
+    
     return enemy;
 }
