@@ -35,7 +35,23 @@ void update_single_enemy(Enemy *enemy, float dt) {
 
         case ENEMY_ATTACK: {
             if (enemy->attack_cooldown <= 0.0f) {
-                printf("Enemy attacking!\n");
+                Rectangle2 hero_aabb = {
+                    hero->position.x,
+                    hero->position.y,
+                    hero->size.x,
+                    hero->size.y,
+                };
+
+                Rectangle2 enemy_aabb = {
+                    enemy->position.x,
+                    enemy->position.y,
+                    enemy->size.x,
+                    enemy->size.y,
+                };
+
+                if (are_intersecting(hero_aabb, enemy_aabb)) {
+                    printf("Enemy successfully attacked hero!\n");
+                }
                 enemy->attack_cooldown = 1.5f;
             } else {
                 enemy->state = ENEMY_DEFEND;

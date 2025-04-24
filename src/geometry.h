@@ -932,3 +932,12 @@ inline bool is_touching_bottom(Rectangle2 a, Rectangle2 b, Vector2 vel) {
         ar > bl &&
         al < br;
 }
+
+inline bool are_intersecting(Rectangle2 a, Rectangle2 b) {
+    // @TODO: Speed.
+    bool result = (is_touching_left(a, b, v2(0, 0)) ||
+                   is_touching_right(a, b, v2(0, 0)) ||
+                   is_touching_top(a, b, v2(0, 0)) ||
+                   is_touching_bottom(a, b, v2(0, 0)));
+    return result;
+}
