@@ -28,3 +28,4 @@ u64 get_hash(char *str);
 u64 get_time_nanoseconds();
 
 void clamp(float *value, float min, float max);
+void clamp(int *value, int min, int max);

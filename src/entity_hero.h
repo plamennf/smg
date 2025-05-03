@@ -37,6 +37,11 @@ struct Hero : public Entity {
     bool on_ground = false;
     bool is_dashing = false;
     float dash_timer = 0.0f;
+
+    // When doing rpg movement the hero moves on per tile basis, so here we store the position
+    // which the hero must move to, so that we can move toward it every frame.
+    int new_absolute_position_x;
+    int new_absolute_position_y;
     
     u64 light_id;
 };

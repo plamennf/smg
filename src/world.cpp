@@ -62,8 +62,17 @@ void world_render(World *world, Render_Commands *rc) {
 
         Texture *texture = get_current_frame(animation);
         if (!texture) continue;
+
+        Vector2 position = e->position;
         
-        Vector2 screen_space_position = world_space_to_screen_space(world, e->position);
+        if (e->type == ENTITY_TYPE_HERO) {
+            Hero *hero = (Hero *)e;
+            if (hero->movement_type == HERO_MOVEMENT_RPG) {
+                position.x += 0.5f - e->size.x * 0.5f;
+            }
+        }
+        
+        Vector2 screen_space_position = world_space_to_screen_space(world, position);
         Vector2 screen_space_size     = world_space_to_screen_space(world, e->size);
 
         render_quad(rc, texture, screen_space_position, screen_space_size, NULL, e->flip_mode, {1, 1, 1, 1});

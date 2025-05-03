@@ -106,9 +106,50 @@ static void update_hero_movement_platformer(Hero *hero, float dt, Tilemap *tilem
     update_animation(hero);
 }
 
+static void update_hero_movement_rpg(Hero *hero, float dt, Tilemap *tilemap) {
+    if (hero->state != HERO_WALKING) {
+        Vector2 move_dir = {};
+        if (is_key_down(KEY_A)) {move_dir.x -= 1.0f; hero->orientation = HERO_LOOKING_LEFT;}
+        if (is_key_down(KEY_D)) {move_dir.x += 1.0f; hero->orientation = HERO_LOOKING_RIGHT;}
+        
+        if (move_dir.x == 0.0f) {
+            if (is_key_down(KEY_W)) {move_dir.y += 1.0f; hero->orientation = HERO_LOOKING_UP;}
+            if (is_key_down(KEY_S)) {move_dir.y -= 1.0f; hero->orientation = HERO_LOOKING_DOWN;}
+        }
+        
+        Vector2 new_position = hero->position + move_dir;
+        u8 tile_id = get_tile_at(tilemap, new_position.x, new_position.y);
+        if (!is_tile_collidable(tilemap, tile_id)) {
+            hero->new_absolute_position_x = (int)new_position.x;
+            hero->new_absolute_position_y = (int)new_position.y;
+
+            clamp(&hero->new_absolute_position_x, 0, tilemap->width - 1);
+            clamp(&hero->new_absolute_position_y, 0, tilemap->height - 1);
+
+            hero->state = HERO_WALKING;
+        }
+    }
+
+    if (hero->state == HERO_WALKING) {
+        hero->position = move_toward(hero->position, v2((float)hero->new_absolute_position_x, (float)hero->new_absolute_position_y), dt);
+        if (hero->position.x == (float)hero->new_absolute_position_x &&
+            hero->position.y == (float)hero->new_absolute_position_y) {
+            hero->state = HERO_IDLE;
+        }
+    }
+
+    update_animation(hero);
+}
+
 void update_single_hero(Hero *hero, float dt, Tilemap *tilemap) {
-    if (hero->movement_type == HERO_MOVEMENT_PLATFORMER) {
-        update_hero_movement_platformer(hero, dt, tilemap);
+    switch (hero->movement_type) {
+        case HERO_MOVEMENT_PLATFORMER: {
+            update_hero_movement_platformer(hero, dt, tilemap);
+        } break;
+
+        case HERO_MOVEMENT_RPG: {
+            update_hero_movement_rpg(hero, dt, tilemap);
+        } break;
     }
     
     Entity *light_e = get_entity_by_id(hero->world, hero->light_id);

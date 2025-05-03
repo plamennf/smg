@@ -244,3 +244,10 @@ void clamp(float *value, float min, float max) {
     if (*value < min) *value = min;
     if (*value > max) *value = max;
 }
+
+void clamp(int *value, int min, int max) {
+    if (!value) return;
+
+    if (*value < min) *value = min;
+    if (*value > max) *value = max;
+}

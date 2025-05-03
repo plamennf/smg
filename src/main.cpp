@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 //#define DO_NIGHT
+#define DO_RPG
 
 static int fps_cap = 60;
 static World current_world;
@@ -24,22 +25,38 @@ static bool init_test_world() {
     world_init(&current_world, v2i(16, 9));
     
     current_world.tilemap = new Tilemap();
+#ifdef DO_RPG
+    if (!load_tilemap(current_world.tilemap, "data/tilemaps/test.tm")) {
+#else
     if (!load_tilemap(current_world.tilemap, "data/tilemaps/test_arena.tm")) {
+#endif
         return false;
     }
 
     current_world.size = v2i(current_world.tilemap->width, current_world.tilemap->height);
 
+#ifndef DO_RPG
 #ifdef DO_NIGHT
     current_world.background_texture = find_or_load_texture("5/7");
 #else
     current_world.background_texture = find_or_load_texture("8/5");
 #endif
+#else
+    current_world.background_texture = NULL;
+#endif
     
     Hero *hero     = make_hero(&current_world);
     hero->position = v2(0, 1);
+#ifdef DO_RPG
+    hero->size     = v2(0.55f, 1.0f);
+#else
     hero->size     = v2(1.1f, 2);
+#endif
+#ifdef DO_RPG
+    hero->movement_type = HERO_MOVEMENT_RPG;
+#else
     hero->movement_type = HERO_MOVEMENT_PLATFORMER;
+#endif
 
     Light *light    = make_light(&current_world);
     light->position = hero->position;
@@ -57,6 +74,7 @@ static bool init_test_world() {
     
     hero->light_id = light->id;
 
+#ifndef DO_RPG
     Enemy *enemy = make_enemy(&current_world);
     enemy->position = v2((float)current_world.size.x - 1.0f,1.0f);
     enemy->size     = v2(2.15f, 2.0f);
@@ -79,6 +97,7 @@ static bool init_test_world() {
 #endif
 
     enemy->light_id = enemy_light->id;
+#endif
     
     return true;
 }
