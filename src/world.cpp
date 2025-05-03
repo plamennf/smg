@@ -4,6 +4,7 @@
 #include "render.h"
 #include "input.h"
 #include "animation.h"
+#include "assets.h"
 
 #include "mt19937-64.h"
 
@@ -11,15 +12,19 @@
 #include "entity_hero.h"
 #include "entity_light.h"
 #include "entity_enemy.h"
+#include "entity_building.h"
 
 void world_init(World *world, Vector2i size) {
     unsigned long long init[] = {(u64)size.x, (u64)size.y};
     init_by_array64(init, ArrayCount(init));
     
     world->size = size;
+    world->needs_to_switch = false;
 }
 
 void world_update(World *world, float dt) {
+    if (world->needs_to_switch) return;
+    
     for (int i = 0; i < world->entity_lookup.allocated; i++) {
         if (!world->entity_lookup.occupancy_mask[i]) continue;
         Entity *e = world->entity_lookup.buckets[i].value;
@@ -27,6 +32,7 @@ void world_update(World *world, float dt) {
         switch (e->type) {
             case ENTITY_TYPE_HERO: {
                 update_single_hero((Hero *)e, dt, world->tilemap);
+                if (world->needs_to_switch) return;
             } break;
 
             case ENTITY_TYPE_ENEMY: {
@@ -41,6 +47,8 @@ void world_update(World *world, float dt) {
 }
 
 void world_render(World *world, Render_Commands *rc) {
+    if (world->needs_to_switch) return;
+    
     if (world->background_texture) {
         // Y-Position is 1, because I assume that when we have a background texture, that means we are in an arena/fight and when you are in an arena there is going to be only one unit of platform underneath the player.
         Vector2 screen_space_position = world_space_to_screen_space(world, v2(0, 1));
@@ -80,6 +88,8 @@ void world_render(World *world, Render_Commands *rc) {
 }
 
 void world_render_lights(World *world, Render_Commands *rc) {
+    if (world->needs_to_switch) return;
+    
     for (int i = 0; i < world->entity_lookup.allocated; i++) {
         if (!world->entity_lookup.occupancy_mask[i]) continue;
         Entity *e = world->entity_lookup.buckets[i].value;
@@ -94,6 +104,20 @@ void world_render_lights(World *world, Render_Commands *rc) {
         
         render_circle(rc, screen_space_position, screen_space_radius, color);
     }
+}
+
+void world_destroy(World *world) {
+    for (int i = 0; i < world->entity_lookup.allocated; i++) {
+        if (!world->entity_lookup.occupancy_mask[i]) continue;
+
+        delete world->entity_lookup.buckets[i].value;
+        world->entity_lookup.buckets[i] = {0, NULL};
+        world->entity_lookup.occupancy_mask[i] = false;
+    }
+    world->entity_lookup.count = 0;
+
+    world->background_texture = NULL;
+    world->tilemap = NULL;
 }
 
 Vector2 world_space_to_screen_space(World *world, Vector2 v) {
@@ -175,4 +199,26 @@ Enemy *make_enemy(World *world) {
     enemy->state           = ENEMY_IDLE;
     
     return enemy;
+}
+
+Building *make_building(World *world, int type) {
+    Building *building = new Building();
+    register_entity(world, building, ENTITY_TYPE_BUILDING);
+    building->type = (Building_Type)type;
+    
+    switch (type) {
+        case BUILDING_TYPE_HOUSE: {
+            building->current_animation = find_or_load_animation("house");
+        } break;
+
+        case BUILDING_TYPE_TOURNAMENT: {
+            building->current_animation = find_or_load_animation("tournament");
+        } break;
+
+        case BUILDING_TYPE_SHOP: {
+            assert(!"Shop not implemented");
+        } break;
+    }
+    
+    return building;
 }

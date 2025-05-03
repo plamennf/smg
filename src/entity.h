@@ -10,6 +10,7 @@ enum Entity_Type {
     ENTITY_TYPE_HERO,
     ENTITY_TYPE_LIGHT,
     ENTITY_TYPE_ENEMY,
+    ENTITY_TYPE_BUILDING,
 };
 
 struct Entity {

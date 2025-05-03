@@ -934,10 +934,18 @@ inline bool is_touching_bottom(Rectangle2 a, Rectangle2 b, Vector2 vel) {
 }
 
 inline bool are_intersecting(Rectangle2 a, Rectangle2 b) {
+#if 0
     // @TODO: Speed.
     bool result = (is_touching_left(a, b, v2(0, 0)) ||
                    is_touching_right(a, b, v2(0, 0)) ||
                    is_touching_top(a, b, v2(0, 0)) ||
                    is_touching_bottom(a, b, v2(0, 0)));
     return result;
+#else
+    int d0 = (b.x + b.width)  < a.x;
+    int d1 = (a.x + a.width)  < b.x;
+    int d2 = (b.y + b.height) < a.y;
+    int d3 = (a.y + a.height) < b.y;
+    return !(d0 | d1 | d2 | d3);
+#endif
 }

@@ -8,6 +8,7 @@ struct Texture;
 struct Hero;
 struct Light;
 struct Enemy;
+struct Building;
 
 struct Tilemap;
 
@@ -18,12 +19,16 @@ struct World {
     Texture *background_texture;
     
     Tilemap *tilemap;
+
+    bool needs_to_switch;
 };
 
 void world_init(World *world, Vector2i size);
 void world_update(World *world, float dt);
 void world_render(World *world, Render_Commands *rc);
 void world_render_lights(World *world, Render_Commands *rc);
+
+void world_destroy(World *world);
 
 Vector2 world_space_to_screen_space(World *world, Vector2 v);
 Vector2 screen_space_to_world_space(World *world, Vector2 v);
@@ -33,3 +38,4 @@ Entity *get_entity_by_id(World *world, u64 id);
 Hero *make_hero(World *world);
 Light *make_light(World *world);
 Enemy *make_enemy(World *world);
+Building *make_building(World *world, int type);

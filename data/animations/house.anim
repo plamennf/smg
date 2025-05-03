@@ -1,0 +1,10 @@
+version = 1
+
+sample_rate = 6
+is_looping = true
+num_frames = 5
+house1
+house2
+house3
+house4
+house5

@@ -5,3 +5,5 @@
 #include "utils.h"
 #include "geometry.h"
 #include "hash_table.h"
+
+void go_to_arena();

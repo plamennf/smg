@@ -5,6 +5,7 @@
 #include "input.h"
 #include "entity_hero.h"
 #include "entity_light.h"
+#include "entity_building.h"
 #include "animation.h"
 #include "assets.h"
 
@@ -116,17 +117,58 @@ static void update_hero_movement_rpg(Hero *hero, float dt, Tilemap *tilemap) {
             if (is_key_down(KEY_W)) {move_dir.y += 1.0f; hero->orientation = HERO_LOOKING_UP;}
             if (is_key_down(KEY_S)) {move_dir.y -= 1.0f; hero->orientation = HERO_LOOKING_DOWN;}
         }
-        
-        Vector2 new_position = hero->position + move_dir;
-        u8 tile_id = get_tile_at(tilemap, new_position.x, new_position.y);
-        if (!is_tile_collidable(tilemap, tile_id)) {
-            hero->new_absolute_position_x = (int)new_position.x;
-            hero->new_absolute_position_y = (int)new_position.y;
 
-            clamp(&hero->new_absolute_position_x, 0, tilemap->width - 1);
-            clamp(&hero->new_absolute_position_y, 0, tilemap->height - 1);
+        if (move_dir.x != 0.0f || move_dir.y != 0.0f) {
+            Vector2 new_position = hero->position + move_dir;
+            u8 tile_id = get_tile_at(tilemap, new_position.x, new_position.y);
+            if (!is_tile_collidable(tilemap, tile_id)) {
+                hero->new_absolute_position_x = (int)new_position.x;
+                hero->new_absolute_position_y = (int)new_position.y;
 
-            hero->state = HERO_WALKING;
+                clamp(&hero->new_absolute_position_x, 0, tilemap->width - 1);
+                clamp(&hero->new_absolute_position_y, 0, tilemap->height - 1);
+
+                hero->state = HERO_WALKING;
+            } else {
+                if (move_dir.y > 0.0f) {
+                    // Might be faster to store indices to the buildings on the hero instead of
+                    // looping through all entities each frame.
+                    World *world = hero->world;
+            
+                    Rectangle2 hero_aabb;
+                    hero_aabb.x      = new_position.x;
+                    hero_aabb.y      = new_position.y;
+                    hero_aabb.width  = hero->size.x;
+                    hero_aabb.height = hero->size.y;
+                    for (int i = 0; i < world->entity_lookup.allocated; i++) {
+                        if (!world->entity_lookup.occupancy_mask[i]) continue;
+                        Entity *e = world->entity_lookup.buckets[i].value;
+                        if (e->type != ENTITY_TYPE_BUILDING) continue;
+
+                        Building *building = (Building *)e;
+
+                        Rectangle2 building_aabb;
+                        building_aabb.x      = building->position.x;
+                        building_aabb.y      = building->position.y;
+                        building_aabb.width  = building->size.x;
+                        building_aabb.height = building->size.y;
+
+                        if (!is_key_pressed(KEY_ENTER)) continue;
+                        if (!are_intersecting(hero_aabb, building_aabb)) continue;
+                        //if (!is_touching_top(hero_aabb, building_aabb, v2(0, 0))) continue;
+                
+                        switch (building->type) {
+                            case BUILDING_TYPE_HOUSE: {
+                                printf("Walking into house!\n");
+                            } break;
+
+                            case BUILDING_TYPE_TOURNAMENT: {
+                                world->needs_to_switch = true;
+                            } break;
+                        }
+                    }
+                }
+            }
         }
     }
 
