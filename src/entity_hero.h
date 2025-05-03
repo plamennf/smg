@@ -42,6 +42,7 @@ struct Hero : public Entity {
     // which the hero must move to, so that we can move toward it every frame.
     int new_absolute_position_x;
     int new_absolute_position_y;
+    bool is_leniency_frame;
     
     u64 light_id;
 };

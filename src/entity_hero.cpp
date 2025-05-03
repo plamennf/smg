@@ -107,7 +107,7 @@ static void update_hero_movement_platformer(Hero *hero, float dt, Tilemap *tilem
 }
 
 static void update_hero_movement_rpg(Hero *hero, float dt, Tilemap *tilemap) {
-    if (hero->state != HERO_WALKING) {
+    if (hero->state != HERO_WALKING || hero->is_leniency_frame) {
         Vector2 move_dir = {};
         if (is_key_down(KEY_A)) {move_dir.x -= 1.0f; hero->orientation = HERO_LOOKING_LEFT;}
         if (is_key_down(KEY_D)) {move_dir.x += 1.0f; hero->orientation = HERO_LOOKING_RIGHT;}
@@ -134,10 +134,16 @@ static void update_hero_movement_rpg(Hero *hero, float dt, Tilemap *tilemap) {
         hero->position = move_toward(hero->position, v2((float)hero->new_absolute_position_x, (float)hero->new_absolute_position_y), dt);
         if (hero->position.x == (float)hero->new_absolute_position_x &&
             hero->position.y == (float)hero->new_absolute_position_y) {
-            hero->state = HERO_IDLE;
+
+            if (hero->is_leniency_frame) {
+                hero->state = HERO_IDLE;
+                hero->is_leniency_frame = false;
+            } else {
+                hero->is_leniency_frame = true;
+            }
         }
     }
-
+    
     update_animation(hero);
 }
 
