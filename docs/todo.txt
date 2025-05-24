@@ -1,9 +1,7 @@
-- Camera.
-- Enemies.
 - Fighting.
 - Abilities.
 - Add leaf-wind thing animation
 - Buildings and make them interactable with.
 
 Polish:
-- RPG Animation stutters, because we reset the animation we should give a few frames leniency, so that if a new move happens it continues the animation.
+- RPG Movement speed. Should we make it faster?
