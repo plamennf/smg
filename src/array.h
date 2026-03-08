@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdlib.h>
+#include <string.h>
 
 template <typename Array>
 struct Array_Iterator {
@@ -65,7 +65,8 @@ struct Array {
     T *data = NULL;
     int allocated = 0;
     int count = 0;
-
+    bool use_temporary_storage = false;
+    
     ~Array();
 
     void reserve(int size);
@@ -75,6 +76,23 @@ struct Array {
     int find(T const &item);
     void ordered_remove_by_index(int n);
 
+    inline void deallocate() {
+        if (data && !use_temporary_storage) {
+            free(data);
+            data = NULL;
+        }
+
+        allocated = 0;
+        count = 0;
+    }
+    
+    inline void ordered_remove_by_value(T const &value) {
+        int index = find(value);
+        if (index != -1) {
+            ordered_remove_by_index(index);
+        }
+    }
+
     T *copy_to_array();
     
     T const &operator[](int index) const;
@@ -82,14 +100,20 @@ struct Array {
 
     inline Iterator begin() { return data; }
     inline Iterator end() { return data + count; }
+
+#ifdef COMPILER_MSVC
+#pragma warning(disable : 4172)
+#endif
+    inline Iterator const &begin() const { return data; }
+    inline Iterator const &end() const { return data + count; }
+#ifdef COMPILER_MSVC
+#pragma warning(default : 4172)
+#endif
 };
 
 template <typename T>
 inline Array <T>::~Array() {
-    if (data) {
-        free(data);
-        data = NULL;
-    }
+    //deallocate();
 }
 
 template <typename T>
@@ -102,11 +126,19 @@ inline void Array <T>::reserve(int size) {
     int new_bytes = new_allocated * sizeof(T);
     int old_bytes = allocated * sizeof(T);
 
-    void *new_data = malloc(new_bytes);
+    void *new_data;
+    if (use_temporary_storage) {
+        new_data = talloc(new_bytes);
+    } else {
+        new_data = malloc(new_bytes);
+    }
     
     if (data) {
         memcpy(new_data, data, old_bytes);
-        free(data);
+
+        if (!use_temporary_storage) {
+            free(data);
+        }
     }
 
     data = (T *)new_data;
@@ -150,15 +182,15 @@ inline void Array <T>::ordered_remove_by_index(int n) {
 
 template <typename T>
 inline T const &Array <T>::operator[](int index) const {
-    assert(index >= 0);
-    assert(index < count);
+    Assert(index >= 0);
+    Assert(index < count);
     return data[index];
 }
 
 template <typename T>
 inline T &Array <T>::operator[](int index) {
-    assert(index >= 0);
-    assert(index < count);
+    Assert(index >= 0);
+    Assert(index < count);
     return data[index];    
 }
 

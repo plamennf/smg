@@ -1,5 +1,20 @@
 #pragma once
 
+inline u64 get_hash(u64 x) {
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = ((x >> 16) ^ x) * 0x45d9f3b;
+    x = (x >> 16) ^ x;
+    return x;
+}
+
+inline u64 get_hash(const char *str) {
+    u64 hash = 5381;
+    for (const char *at = str; *at; at++) {
+        hash = ((hash << 5) + hash) + *at;
+    }
+    return hash;
+}
+
 template <typename Key, typename Value>
 struct Hash_Table {
     struct Bucket {
@@ -11,13 +26,28 @@ struct Hash_Table {
     bool *occupancy_mask = nullptr;
     int allocated = 0;
     int count = 0;
+
+    inline void deallocate() {
+        if (buckets) {
+            free(buckets);
+            buckets = NULL;
+        }
+
+        if (occupancy_mask) {
+            free(occupancy_mask);
+            occupancy_mask = NULL;
+        }
+
+        allocated = 0;
+        count = 0;
+    }
     
     inline void grow() {
         const int HASH_TABLE_INITIAL_CAPACITY = 256;
 
         if (!buckets) {
-            assert(allocated == 0);
-            assert(count == 0);
+            Assert(allocated == 0);
+            Assert(count == 0);
 
             buckets = (Bucket *)calloc(HASH_TABLE_INITIAL_CAPACITY, sizeof(Bucket));
             occupancy_mask = (bool *)calloc(HASH_TABLE_INITIAL_CAPACITY, sizeof(bool));
@@ -91,8 +121,8 @@ struct String_Hash_Table {
         const int HASH_TABLE_INITIAL_CAPACITY = 256;
 
         if (!buckets) {
-            assert(allocated == 0);
-            assert(count == 0);
+            Assert(allocated == 0);
+            Assert(count == 0);
             
             buckets = (Bucket *)calloc(HASH_TABLE_INITIAL_CAPACITY, sizeof(Bucket));
             occupancy_mask = (bool *)calloc(HASH_TABLE_INITIAL_CAPACITY, sizeof(bool));

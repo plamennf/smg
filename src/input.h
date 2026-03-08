@@ -1,133 +1,167 @@
 #pragma once
 
-// Copied from glfw3.h
 
-#define KEY_UNKNOWN            -1
+enum Key_Code {
+    KEY_BACKSPACE       = 0x08,
+    KEY_TAB             = 0x09,
+    KEY_CLEAR           = 0x0C,
+    KEY_ENTER           = 0x0D,
+    KEY_SHIFT           = 0x10,
+    KEY_CTRL            = 0x11,
+    KEY_ALT             = 0x12,
+    KEY_PAUSE           = 0x13,
+    KEY_CAPS_LOCK       = 0x14,
+    KEY_ESCAPE          = 0x1B,
+    KEY_SPACE           = 0x20,
+    KEY_PAGE_UP         = 0x21,
+    KEY_PAGE_DOWN       = 0x22,
+    KEY_END	            = 0x23,
+    KEY_HOME            = 0x24,
+    KEY_LEFT_ARROW      = 0x25,
+    KEY_UP_ARROW        = 0x26,
+    KEY_RIGHT_ARROW     = 0x27,
+    KEY_DOWN_ARROW      = 0x28,
+    KEY_SELECT          = 0x29,
+    KEY_SNAPSHOT        = 0x2C,
+    KEY_INSERT          = 0x2D,
+    KEY_DELETE          = 0x2E,
+    KEY_0               = 0x30,
+    KEY_1               = 0x31,
+    KEY_2               = 0x32,
+    KEY_3               = 0x33,
+    KEY_4               = 0x34,
+    KEY_5               = 0x35,
+    KEY_6               = 0x36,
+    KEY_7               = 0x37,
+    KEY_8               = 0x38,
+    KEY_9               = 0x39,
+    KEY_A               = 0x41,
+    KEY_B               = 0x42,
+    KEY_C               = 0x43,
+    KEY_D               = 0x44,
+    KEY_E               = 0x45,
+    KEY_F               = 0x46,
+    KEY_G               = 0x47,
+    KEY_H               = 0x48,
+    KEY_I               = 0x49,
+    KEY_J               = 0x4A,
+    KEY_K               = 0x4B,
+    KEY_L               = 0x4C,
+    KEY_M               = 0x4D,
+    KEY_N               = 0x4E,
+    KEY_O               = 0x4F,
+    KEY_P               = 0x50,
+    KEY_Q               = 0x51,
+    KEY_R               = 0x52,
+    KEY_S               = 0x53,
+    KEY_T               = 0x54,
+    KEY_U               = 0x55,
+    KEY_V               = 0x56,
+    KEY_W               = 0x57,
+    KEY_X               = 0x58,
+    KEY_Y               = 0x59,
+    KEY_Z               = 0x5A,
+    KEY_LMETA           = 0x5B,
+    KEY_RMETA           = 0x5C,
+    KEY_SLEEP           = 0x5F,
+    KEY_NP0             = 0x60,
+    KEY_NP1             = 0x61,
+    KEY_NP2             = 0x62,
+    KEY_NP3             = 0x63,
+    KEY_NP4             = 0x64,
+    KEY_NP5             = 0x65,
+    KEY_NP6             = 0x66,
+    KEY_NP7             = 0x67,
+    KEY_NP8             = 0x68,
+    KEY_NP9             = 0x69,
+    KEY_NP_MULTIPLY     = 0x6A,
+    KEY_NP_ADD          = 0x6B,
+    KEY_NP_SEPARATOR    = 0x6C,
+    KEY_NP_SUBTRACT     = 0x6D,
+    KEY_NP_DECIMAL      = 0x6E,
+    KEY_NP_DIVIDE       = 0x6F,
+    KEY_F1  = 0x70,
+    KEY_F2  = 0x71,
+    KEY_F3  = 0x72,
+    KEY_F4  = 0x73,
+    KEY_F5  = 0x74,
+    KEY_F6  = 0x75,
+    KEY_F7  = 0x76,
+    KEY_F8  = 0x77,
+    KEY_F9  = 0x78,
+    KEY_F10 = 0x79,
+    KEY_F11 = 0x7A,
+    KEY_F12 = 0x7B,
+    KEY_F13 = 0x7C,
+    KEY_F14 = 0x7D,
+    KEY_F15 = 0x7E,
+    KEY_F16 = 0x7F,
+    KEY_F17 = 0x80,
+    KEY_F18 = 0x81,
+    KEY_F19 = 0x82,
+    KEY_F20 = 0x83,
+    KEY_F21 = 0x84,
+    KEY_F22 = 0x85,
+    KEY_F23 = 0x86,
+    KEY_F24 = 0x87,
+    KEY_NUM_LOCK = 0x90,
+    KEY_SCROLL_LOCK = 0x91,
+    KEY_LSHIFT = 0xA0,
+    KEY_RSHIFT = 0xA1,
+    KEY_LCTRL  = 0xA2,
+    KEY_RCTRL  = 0xA3,
+    //KEY_LMETA  = 0xA4,
+    //KEY_RMETA  = 0xA5,
+    KEY_SEMICOLON_COLON = 0xBA,
+    KEY_EQUALS_PLUS = 0xBB,
+    KEY_COMMA_LESS_THAN = 0xBC,
+    KEY_DASH_UNDERSCORE = 0xBD,
+    KEY_PERIOD_GREATER_THAN = 0xBE,
+    KEY_FORWARD_SLASH_QUESTION_MARK = 0xBF,
+    KEY_GRAVE_ACCENT_TILDE = 0xC0,
 
-#define KEY_SPACE              32
-#define KEY_APOSTROPHE         39  /* ' */
-#define KEY_COMMA              44  /* , */
-#define KEY_MINUS              45  /* - */
-#define KEY_PERIOD             46  /* . */
-#define KEY_SLASH              47  /* / */
-#define KEY_0                  48
-#define KEY_1                  49
-#define KEY_2                  50
-#define KEY_3                  51
-#define KEY_4                  52
-#define KEY_5                  53
-#define KEY_6                  54
-#define KEY_7                  55
-#define KEY_8                  56
-#define KEY_9                  57
-#define KEY_SEMICOLON          59  /* ; */
-#define KEY_EQUAL              61  /* = */
-#define KEY_A                  65
-#define KEY_B                  66
-#define KEY_C                  67
-#define KEY_D                  68
-#define KEY_E                  69
-#define KEY_F                  70
-#define KEY_G                  71
-#define KEY_H                  72
-#define KEY_I                  73
-#define KEY_J                  74
-#define KEY_K                  75
-#define KEY_L                  76
-#define KEY_M                  77
-#define KEY_N                  78
-#define KEY_O                  79
-#define KEY_P                  80
-#define KEY_Q                  81
-#define KEY_R                  82
-#define KEY_S                  83
-#define KEY_T                  84
-#define KEY_U                  85
-#define KEY_V                  86
-#define KEY_W                  87
-#define KEY_X                  88
-#define KEY_Y                  89
-#define KEY_Z                  90
-#define KEY_LEFT_BRACKET       91  /* [ */
-#define KEY_BACKSLASH          92  /* \ */
-#define KEY_RIGHT_BRACKET      93  /* ] */
-#define KEY_GRAVE_ACCENT       96  /* ` */
-#define KEY_WORLD_1            161 /* non-US #1 */
-#define KEY_WORLD_2            162 /* non-US #2 */
+    KEY_GAMEPAD_A = 0xC3,
+    KEY_GAMEPAD_B = 0xC4,
+    KEY_GAMEPAD_X = 0xC5,
+    KEY_GAMEPAD_Y = 0xC6,
+    KEY_GAMEPAD_RIGHT_SHOULDER = 0xC7,
+    KEY_GAMEPAD_LEFT_SHOULDER = 0xC8,
+    KEY_GAMEPAD_LEFT_TRIGGER = 0xC9,
+    KEY_GAMEPAD_RIGHT_TRIGGER = 0xCA,
+    KEY_GAMEPAD_DPAD_UP = 0xCB,
+    KEY_GAMEPAD_DPAD_DOWN = 0xCC,
+    KEY_GAMEPAD_DPAD_LEFT = 0xCD,
+    KEY_GAMEPAD_DPAD_RIGHT = 0xCE,
+    KEY_GAMEPAD_START = 0xCF,
+    KEY_GAMEPAD_BACK = 0xD0,
+    KEY_GAMEPAD_LEFT_THUMBSTICK_BUTTON = 0xD1,
+    KEY_GAMEPAD_RIGHT_THUMBSTICK_BUTTON = 0xD2,
+    KEY_GAMEPAD_LEFT_THUMBSTICK_UP = 0xD3,
+    KEY_GAMEPAD_LEFT_THUMBSTICK_DOWN = 0xD4,
+    KEY_GAMEPAD_LEFT_THUMBSTICK_RIGHT = 0xD5,
+    KEY_GAMEPAD_LEFT_THUMBSTICK_LEFT = 0xD6,
+    KEY_GAMEPAD_RIGHT_THUMBSTICK_UP = 0xD7,
+    KEY_GAMEPAD_RIGHT_THUMBSTICK_DOWN = 0xD8,
+    KEY_GAMEPAD_RIGHT_THUMBSTICK_RIGHT = 0xD9,
+    KEY_GAMEPAD_RIGHT_THUMBSTICK_LEFT = 0xDA,
 
-/* Function keys */
-#define KEY_ESCAPE             256
-#define KEY_ENTER              257
-#define KEY_TAB                258
-#define KEY_BACKSPACE          259
-#define KEY_INSERT             260
-#define KEY_DELETE             261
-#define KEY_RIGHT              262
-#define KEY_LEFT               263
-#define KEY_DOWN               264
-#define KEY_UP                 265
-#define KEY_PAGE_UP            266
-#define KEY_PAGE_DOWN          267
-#define KEY_HOME               268
-#define KEY_END                269
-#define KEY_CAPS_LOCK          280
-#define KEY_SCROLL_LOCK        281
-#define KEY_NUM_LOCK           282
-#define KEY_PRINT_SCREEN       283
-#define KEY_PAUSE              284
-#define KEY_F1                 290
-#define KEY_F2                 291
-#define KEY_F3                 292
-#define KEY_F4                 293
-#define KEY_F5                 294
-#define KEY_F6                 295
-#define KEY_F7                 296
-#define KEY_F8                 297
-#define KEY_F9                 298
-#define KEY_F10                299
-#define KEY_F11                300
-#define KEY_F12                301
-#define KEY_F13                302
-#define KEY_F14                303
-#define KEY_F15                304
-#define KEY_F16                305
-#define KEY_F17                306
-#define KEY_F18                307
-#define KEY_F19                308
-#define KEY_F20                309
-#define KEY_F21                310
-#define KEY_F22                311
-#define KEY_F23                312
-#define KEY_F24                313
-#define KEY_F25                314
-#define KEY_KP_0               320
-#define KEY_KP_1               321
-#define KEY_KP_2               322
-#define KEY_KP_3               323
-#define KEY_KP_4               324
-#define KEY_KP_5               325
-#define KEY_KP_6               326
-#define KEY_KP_7               327
-#define KEY_KP_8               328
-#define KEY_KP_9               329
-#define KEY_KP_DECIMAL         330
-#define KEY_KP_DIVIDE          331
-#define KEY_KP_MULTIPLY        332
-#define KEY_KP_SUBTRACT        333
-#define KEY_KP_ADD             334
-#define KEY_KP_ENTER           335
-#define KEY_KP_EQUAL           336
-#define KEY_LEFT_SHIFT         340
-#define KEY_LEFT_CONTROL       341
-#define KEY_LEFT_ALT           342
-#define KEY_LEFT_SUPER         343
-#define KEY_RIGHT_SHIFT        344
-#define KEY_RIGHT_CONTROL      345
-#define KEY_RIGHT_ALT          346
-#define KEY_RIGHT_SUPER        347
-#define KEY_MENU               348
+    KEY_LEFT_BRACE  = 0xDB,
+    KEY_BACKSLASH   = 0xDC,
+    KEY_RIGHT_BRACE = 0xDD,
+    KEY_APOSTROPHE_DOUBLE_QUOTATION_MARK = 0xDE,
 
-#define KEY_LAST               KEY_MENU
+    NUM_KEY_CODES,
+};
+
+enum Mouse_Button {
+    MOUSE_BUTTON_LEFT   = 0x01,
+    MOUSE_BUTTON_RIGHT  = 0x02,
+    MOUSE_BUTTON_MIDDLE = 0x04,
+    MOUSE_BUTTON_X1     = 0x05,
+    MOUSE_BUTTON_X2     = 0x06,
+
+    NUM_MOUSE_BUTTONS,
+};
 
 struct Key_State {
     bool is_down;
@@ -135,6 +169,31 @@ struct Key_State {
     bool changed;
 };
 
-bool is_key_down(int key_code);
-bool is_key_pressed(int key_code);
-bool was_key_just_released(int key_code);
+struct Mouse_Button_State {
+    bool is_down;
+    bool was_down;
+    bool changed;
+};
+
+extern int mouse_cursor_x;
+extern int mouse_cursor_y;
+
+extern int mouse_cursor_x_delta;
+extern int mouse_cursor_y_delta;
+
+extern int mouse_scroll_wheel_x_delta;
+extern int mouse_scroll_wheel_y_delta;
+
+bool is_key_down(Key_Code key_code);
+bool is_key_pressed(Key_Code key_code);
+bool was_key_just_released(Key_Code key_code);
+
+void set_key_state(Key_Code key_code, bool is_down);
+void clear_key_states();
+
+bool is_mouse_button_down(Mouse_Button button);
+bool is_mouse_button_pressed(Mouse_Button button);
+bool was_mouse_button_just_released(Mouse_Button button);
+
+void set_mouse_button_state(Mouse_Button button, bool is_down);
+void clear_mouse_button_states();

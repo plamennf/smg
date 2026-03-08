@@ -4,7 +4,7 @@
 #include FT_FREETYPE_H
 
 #include "font.h"
-#include "render.h"
+#include "renderer.h"
 
 static FT_Library ft_library;
 static bool ft_library_initted;
@@ -17,7 +17,7 @@ static inline int FT_ROUND(int x) {
 bool load_font(Font *font, char *filepath, int character_height) {
     if (!ft_library_initted) {
         if (FT_Init_FreeType(&ft_library)) {
-            fprintf(stderr, "Failed to initialize FreeType!\n");
+            logprintf("Failed to initialize FreeType!\n");
             return false;
         }
         ft_library_initted = true;
@@ -27,17 +27,17 @@ bool load_font(Font *font, char *filepath, int character_height) {
 
     FT_Face face;
     if (FT_New_Face(ft_library, filepath, 0, &face)) {
-        fprintf(stderr, "Failed to load font '%s'.\n", filepath);
+        logprintf("Failed to load font '%s'.\n", filepath);
         return false;
     }
-    defer(FT_Done_Face(face));
+    defer { FT_Done_Face(face); };
 
     FT_Set_Pixel_Sizes(face, 0, character_height);
     
     u64 total_prepass_area = 0;
     for (u8 c = 0; c < 128; c++) {
         if (FT_Load_Char(face, c, FT_LOAD_RENDER)) {
-            fprintf(stderr, "Failed to load glyph for '%c'\n", c);
+            logprintf("Failed to load glyph for '%c'\n", c);
             continue;
         }
 
@@ -48,7 +48,7 @@ bool load_font(Font *font, char *filepath, int character_height) {
     int texture_height = texture_width;
     u8 *texture_data   = new u8[(s64)texture_width * (s64)texture_height * 4];
     memset(texture_data, 0, (s64)texture_width * (s64)texture_height * 4);
-    defer(delete [] texture_data);
+    defer { delete [] texture_data; };
     int texture_cursor_x = 0;
     int texture_cursor_y = 0;
 
@@ -131,9 +131,10 @@ bool load_font(Font *font, char *filepath, int character_height) {
     }
 
     auto error = FT_Select_Charmap(face, FT_ENCODING_UNICODE);
-    assert(!error);
+    Assert(!error);
 
-    font->texture = load_texture_from_memory(texture_width, texture_height, texture_data);
+    font->texture = new Texture();
+    if (!renderer_create_texture(font->texture, texture_width, texture_height, texture_data)) return false;
 
     return true;
 }
@@ -146,7 +147,7 @@ int get_text_width(Font *font, char *text) {
         if (!glyph) continue;
 
         if (*at == '\n') {
-            printf("Reached new line in get_text_width: Stopping measuring!\n");
+            logprintf("Reached new line in get_text_width: Stopping measuring!\n");
             break;
         }
 

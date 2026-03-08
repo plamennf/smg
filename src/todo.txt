@@ -1,0 +1,5 @@
+- Add sprite render info struct
+- Create gpu sprite vertex and index buffer
+- Create sprite instancing buffer
+- Create per scene uniforms cbo
+- Set the world matrix so that the output has black bars.

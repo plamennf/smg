@@ -1,9 +1,52 @@
 #pragma once
 
+#include "general.h"
+
 #include <math.h>
 
 const float PI = 3.14159265359f;
 const float TAU = 6.28318530718f;
+
+inline float lerp(float a, float b, float t) {
+    return a + t * (b - a);
+}
+
+inline float square_root(float value) {
+#ifdef HAS_INTRINSIC_SUPPORT
+    float result = _mm_cvtss_f32(_mm_sqrt_ss(_mm_set_ss(value)));
+#else
+    float result = sqrtf(value);
+#endif
+    return result;
+}
+
+inline s32 round_float32_to_s32(float value) {
+#ifdef HAS_INTRINSIC_SUPPORT
+    s32 result = _mm_cvtss_si32(_mm_set_ss(value));
+#else
+    s32 result = (s32)roundf(value);
+#endif
+    return result;
+}
+
+inline s32 floor_float32_to_s32(float value) {
+#ifdef HAS_INTRINSIC_SUPPORT
+    s32 result = _mm_cvtss_si32(_mm_floor_ss(_mm_setzero_ps(), _mm_set_ss(value)));
+#else
+    s32 result = (s32)floorf(value);
+#endif
+    return result;
+}
+
+inline int absolute_value(int value) {
+    if (value < 0) return -value;
+    return value;
+}
+
+inline float absolute_value(float value) {
+    float result = fabsf(value);
+    return result;
+}
 
 inline float to_radians(float degrees) {
     float radians = degrees * (PI / 180.0f);
@@ -41,14 +84,14 @@ struct Vector2 {
     };
 
     inline float &operator[](int index) {
-        assert(index >= 0);
-        assert(index < 2);
+        Assert(index >= 0);
+        Assert(index < 2);
         return e[index];
     }
 
     inline float const &operator[](int index) const {
-        assert(index >= 0);
-        assert(index < 2);
+        Assert(index >= 0);
+        Assert(index < 2);
         return e[index];
     }
 };
@@ -215,6 +258,32 @@ inline Vector2 move_toward(Vector2 a, Vector2 b, float amount) {
     return result;
 }
 
+inline Vector2 minv(Vector2 a, Vector2 b) {
+    Vector2 result;
+
+    result.x = Min(a.x, b.x);
+    result.y = Min(a.y, b.y);
+
+    return result;
+}
+
+inline Vector2 maxv(Vector2 a, Vector2 b) {
+    Vector2 result;
+
+    result.x = Max(a.x, b.x);
+    result.y = Max(a.y, b.y);
+
+    return result;
+}
+
+inline Vector2 clampv(Vector2 v, Vector2 a, Vector2 b) {
+    return maxv(a, minv(a, b));
+}
+
+inline Vector2 lerp(Vector2 a, Vector2 b, float t) {
+    return a + t * (b - a);
+}
+
 struct Vector3 {
     union {
         struct {
@@ -231,14 +300,14 @@ struct Vector3 {
     };
 
     inline float &operator[](int index) {
-        assert(index >= 0);
-        assert(index < 3);
+        Assert(index >= 0);
+        Assert(index < 3);
         return e[index];
     }
 
     inline float const &operator[](int index) const {
-        assert(index >= 0);
-        assert(index < 3);
+        Assert(index >= 0);
+        Assert(index < 3);
         return e[index];
     }
 };
@@ -420,14 +489,14 @@ struct Vector4 {
     };
 
     inline float &operator[](int index) {
-        assert(index >= 0);
-        assert(index < 4);
+        Assert(index >= 0);
+        Assert(index < 4);
         return e[index];
     }
 
     inline float const &operator[](int index) const {
-        assert(index >= 0);
-        assert(index < 4);
+        Assert(index >= 0);
+        Assert(index < 4);
         return e[index];
     }
 };
@@ -513,6 +582,34 @@ inline u32 argb_color(Vector4 color) {
     return (ia << 24) | (ir << 16) | (ig << 8) | (ib << 0);
 }
 
+inline float linear_to_srgb(float c) {
+    return powf(c, 1.0f / 2.2f);
+}
+
+inline float length_squared(Vector4 v) {
+    return v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w;
+}
+
+inline float length(Vector4 v) {
+    return sqrtf(length_squared(v));
+}
+
+inline Vector4 normalize_or_zero(Vector4 v) {
+    Vector4 result = {};
+    
+    float len_sq = length_squared(v);
+    if (len_sq > 0.0001f * 0.0001f) {
+        float multiplier = 1.0f / sqrtf(len_sq);
+        result.x = v.x * multiplier;
+        result.y = v.y * multiplier;
+        result.z = v.z * multiplier;
+        result.w = v.w * multiplier;
+    }
+
+    return result;
+}
+
+
 struct Vector2i {
     union {
         struct {
@@ -523,14 +620,14 @@ struct Vector2i {
     };
     
     inline int &operator[](int index) {
-        assert(index >= 0);
-        assert(index < 2);
+        Assert(index >= 0);
+        Assert(index < 2);
         return e[index];
     }
 
     inline int const &operator[](int index) const {
-        assert(index >= 0);
-        assert(index < 2);
+        Assert(index >= 0);
+        Assert(index < 2);
         return e[index];
     }
 };
@@ -564,6 +661,7 @@ struct Matrix4 {
             float _41, _42, _43, _44;
         };
         float e[4][4];
+        float le[16];
     };
 };
 
@@ -600,6 +698,136 @@ inline Matrix4 transpose(Matrix4 m) {
         }
     }
     return result;
+}
+
+inline Matrix4 inverse(Matrix4 m) {
+    Matrix4 inv;
+    float det;
+    int i;
+
+    inv.le[0] = m.le[5]  * m.le[10] * m.le[15] - 
+             m.le[5]  * m.le[11] * m.le[14] - 
+             m.le[9]  * m.le[6]  * m.le[15] + 
+             m.le[9]  * m.le[7]  * m.le[14] +
+             m.le[13] * m.le[6]  * m.le[11] - 
+             m.le[13] * m.le[7]  * m.le[10];
+
+    inv.le[4] = -m.le[4]  * m.le[10] * m.le[15] + 
+              m.le[4]  * m.le[11] * m.le[14] + 
+              m.le[8]  * m.le[6]  * m.le[15] - 
+              m.le[8]  * m.le[7]  * m.le[14] - 
+              m.le[12] * m.le[6]  * m.le[11] + 
+              m.le[12] * m.le[7]  * m.le[10];
+
+    inv.le[8] = m.le[4]  * m.le[9] * m.le[15] - 
+             m.le[4]  * m.le[11] * m.le[13] - 
+             m.le[8]  * m.le[5] * m.le[15] + 
+             m.le[8]  * m.le[7] * m.le[13] + 
+             m.le[12] * m.le[5] * m.le[11] - 
+             m.le[12] * m.le[7] * m.le[9];
+
+    inv.le[12] = -m.le[4]  * m.le[9] * m.le[14] + 
+               m.le[4]  * m.le[10] * m.le[13] +
+               m.le[8]  * m.le[5] * m.le[14] - 
+               m.le[8]  * m.le[6] * m.le[13] - 
+               m.le[12] * m.le[5] * m.le[10] + 
+               m.le[12] * m.le[6] * m.le[9];
+
+    inv.le[1] = -m.le[1]  * m.le[10] * m.le[15] + 
+              m.le[1]  * m.le[11] * m.le[14] + 
+              m.le[9]  * m.le[2] * m.le[15] - 
+              m.le[9]  * m.le[3] * m.le[14] - 
+              m.le[13] * m.le[2] * m.le[11] + 
+              m.le[13] * m.le[3] * m.le[10];
+
+    inv.le[5] = m.le[0]  * m.le[10] * m.le[15] - 
+             m.le[0]  * m.le[11] * m.le[14] - 
+             m.le[8]  * m.le[2] * m.le[15] + 
+             m.le[8]  * m.le[3] * m.le[14] + 
+             m.le[12] * m.le[2] * m.le[11] - 
+             m.le[12] * m.le[3] * m.le[10];
+
+    inv.le[9] = -m.le[0]  * m.le[9] * m.le[15] + 
+              m.le[0]  * m.le[11] * m.le[13] + 
+              m.le[8]  * m.le[1] * m.le[15] - 
+              m.le[8]  * m.le[3] * m.le[13] - 
+              m.le[12] * m.le[1] * m.le[11] + 
+              m.le[12] * m.le[3] * m.le[9];
+
+    inv.le[13] = m.le[0]  * m.le[9] * m.le[14] - 
+              m.le[0]  * m.le[10] * m.le[13] - 
+              m.le[8]  * m.le[1] * m.le[14] + 
+              m.le[8]  * m.le[2] * m.le[13] + 
+              m.le[12] * m.le[1] * m.le[10] - 
+              m.le[12] * m.le[2] * m.le[9];
+
+    inv.le[2] = m.le[1]  * m.le[6] * m.le[15] - 
+             m.le[1]  * m.le[7] * m.le[14] - 
+             m.le[5]  * m.le[2] * m.le[15] + 
+             m.le[5]  * m.le[3] * m.le[14] + 
+             m.le[13] * m.le[2] * m.le[7] - 
+             m.le[13] * m.le[3] * m.le[6];
+
+    inv.le[6] = -m.le[0]  * m.le[6] * m.le[15] + 
+              m.le[0]  * m.le[7] * m.le[14] + 
+              m.le[4]  * m.le[2] * m.le[15] - 
+              m.le[4]  * m.le[3] * m.le[14] - 
+              m.le[12] * m.le[2] * m.le[7] + 
+              m.le[12] * m.le[3] * m.le[6];
+
+    inv.le[10] = m.le[0]  * m.le[5] * m.le[15] - 
+              m.le[0]  * m.le[7] * m.le[13] - 
+              m.le[4]  * m.le[1] * m.le[15] + 
+              m.le[4]  * m.le[3] * m.le[13] + 
+              m.le[12] * m.le[1] * m.le[7] - 
+              m.le[12] * m.le[3] * m.le[5];
+
+    inv.le[14] = -m.le[0]  * m.le[5] * m.le[14] + 
+               m.le[0]  * m.le[6] * m.le[13] + 
+               m.le[4]  * m.le[1] * m.le[14] - 
+               m.le[4]  * m.le[2] * m.le[13] - 
+               m.le[12] * m.le[1] * m.le[6] + 
+               m.le[12] * m.le[2] * m.le[5];
+
+    inv.le[3] = -m.le[1] * m.le[6] * m.le[11] + 
+              m.le[1] * m.le[7] * m.le[10] + 
+              m.le[5] * m.le[2] * m.le[11] - 
+              m.le[5] * m.le[3] * m.le[10] - 
+              m.le[9] * m.le[2] * m.le[7] + 
+              m.le[9] * m.le[3] * m.le[6];
+
+    inv.le[7] = m.le[0] * m.le[6] * m.le[11] - 
+             m.le[0] * m.le[7] * m.le[10] - 
+             m.le[4] * m.le[2] * m.le[11] + 
+             m.le[4] * m.le[3] * m.le[10] + 
+             m.le[8] * m.le[2] * m.le[7] - 
+             m.le[8] * m.le[3] * m.le[6];
+
+    inv.le[11] = -m.le[0] * m.le[5] * m.le[11] + 
+               m.le[0] * m.le[7] * m.le[9] + 
+               m.le[4] * m.le[1] * m.le[11] - 
+               m.le[4] * m.le[3] * m.le[9] - 
+               m.le[8] * m.le[1] * m.le[7] + 
+               m.le[8] * m.le[3] * m.le[5];
+
+    inv.le[15] = m.le[0] * m.le[5] * m.le[10] - 
+              m.le[0] * m.le[6] * m.le[9] - 
+              m.le[4] * m.le[1] * m.le[10] + 
+              m.le[4] * m.le[2] * m.le[9] + 
+              m.le[8] * m.le[1] * m.le[6] - 
+              m.le[8] * m.le[2] * m.le[5];
+
+    det = m.le[0] * inv.le[0] + m.le[1] * inv.le[4] + m.le[2] * inv.le[8] + m.le[3] * inv.le[12];
+
+    if (det == 0)
+        return inv;
+
+    det = 1.0f / det;
+
+    for (i = 0; i < 16; i++)
+        inv.le[i] = inv.le[i] * det;
+
+    return inv;
 }
 
 inline Matrix4 make_perspective(float aspect_ratio, float fov_in_degrees, float z_near, float z_far) {
@@ -948,4 +1176,16 @@ inline bool are_intersecting(Rectangle2 a, Rectangle2 b) {
     int d3 = (a.y + a.height) < b.y;
     return !(d0 | d1 | d2 | d3);
 #endif
+}
+
+inline bool are_rect_and_circle_colliding(Rectangle2 rect, Vector2 position, float radius) {
+    float closest_x = position.x;
+    float closest_y = position.y;
+    clamp(&closest_x, rect.x, rect.x + rect.width);
+    clamp(&closest_y, rect.y, rect.y + rect.height);
+
+    float dx = position.x - closest_x;
+    float dy = position.y - closest_y;
+
+    return (dx * dx + dy * dy) <= (radius * radius);
 }

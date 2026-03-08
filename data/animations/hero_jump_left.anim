@@ -1,9 +1,0 @@
-version = 1
-
-sample_rate = 6
-is_looping = true
-num_frames = 4
-NewPachiSamuraLeftJump1
-NewPachiSamuraLeftJump2
-NewPachiSamuraLeftJumpInAir1
-NewPachiSamuraLeftJumpInAir2
